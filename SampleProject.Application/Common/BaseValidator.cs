@@ -63,7 +63,7 @@ namespace SampleProject.Application.Common
         {
             // Allow common words that contain these patterns
             var allowedWords = new[] { "updated", "created", "selected", "inserted", "deleted" };
-            return allowedWords.Contains(name);
+             return allowedWords.Contains(name);
         }
 
         /// <summary>

@@ -1,5 +1,7 @@
 # SampleProject API Documentation
 
+**Project built in 2 days as portfolio API demonstrating clean architecture, middleware, security and testing practices.**
+
 ## 📋 Table of Contents
 - [Overview](#overview)
 - [Architecture](#architecture)
