@@ -3,6 +3,7 @@ name: Publish Docker Container
 
 on:
   push:
+    branches: [ 'main' ]
     tags: [ 'v*' ]
   workflow_dispatch:
 
@@ -50,6 +51,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "version=latest" >> $GITHUB_OUTPUT
+            echo "version_tag=latest" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "version_tag=$VERSION" >> $GITHUB_OUTPUT
+          else
+            VERSION=$(date +'%Y%m%d-%H%M%S')-${GITHUB_SHA::8}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "version_tag=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -57,8 +74,15 @@ jobs:
           file: docker/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/api:latest
-            ghcr.io/${{ github.repository }}/api:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/sampleproject/api:${{ steps.version.outputs.version_tag }}
+            ghcr.io/${{ github.repository_owner }}/sampleproject/api:latest
+          labels: |
+            org.opencontainers.image.title=SampleProject API
+            org.opencontainers.image.description=.NET 9 Web API with Clean Architecture
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
           build-args: |
             JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
             JWT_ISSUER=${{ secrets.JWT_ISSUER }}
