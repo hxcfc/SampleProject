@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyVersion>0.0.0</AssemblyVersion>
+    <FileVersion>0.0.0</FileVersion>
+    <Version>0.0.0</Version>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Company>FlowCore</Company>
+    <Authors>FlowCore</Authors>
+    <Description>Common options for configuration</Description>
+    <Copyright>© 2025 FlowCore. All rights reserved.</Copyright>
+  </PropertyGroup>
+
+  <!-- Common.Options should be framework-agnostic -->
+
+</Project>

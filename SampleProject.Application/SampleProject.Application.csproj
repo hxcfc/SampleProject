@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net9.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+  </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Common.Options\Common.Options.csproj" />
+        <ProjectReference Include="..\Common.Shared\Common.Shared.csproj" />
+        <ProjectReference Include="..\SampleProject.Domain\SampleProject.Domain.csproj" />
+    </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.10" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.10" />
+		<!-- Application layer should be framework-agnostic - no ASP.NET Core dependencies -->
+		<PackageReference Include="MediatR" Version="13.1.0" />
+		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
+		<!-- JWT services should be in Infrastructure, but interfaces can be here -->
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
+		<PackageReference Include="Serilog" Version="4.2.0" />
+		<!-- EF Core abstractions needed for IDbContextTransaction in IUnitOfWork -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+		<!-- HTTP context accessor for authenticated user claims -->
+		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+	</ItemGroup>
+</Project>

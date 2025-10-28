@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  # SampleProject API
+  sampleproject-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sampleproject-api
+    ports:
+      - "15553:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Database__UseInMemory=false
+      - Database__ConnectionString=Host=postgres;Database=SampleProjectDb;Username=postgres;Password=postgres123;Port=5432;
+      - Jwt__SecretKey=YourSuperSecretKeyThatIsAtLeast32CharactersLongForProduction!
+      - Jwt__Issuer=SampleProject.API
+      - Jwt__Audience=SampleProject.Users
+      - Swagger__Enabled=true
+      - HealthCheck__Enabled=true
+      - HealthCheck__EnableUI=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - sampleproject-network
+    volumes:
+      - ./Logs:/app/Logs
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: sampleproject-postgres
+    environment:
+      - POSTGRES_DB=SampleProjectDb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sampleproject-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d SampleProjectDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis (for caching)
+  redis:
+    image: redis:7-alpine
+    container_name: sampleproject-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - sampleproject-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Prometheus (for metrics)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sampleproject-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - sampleproject-network
+    restart: unless-stopped
+
+  # Grafana (for dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sampleproject-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - sampleproject-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  sampleproject-network:
+    driver: bridge

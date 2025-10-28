@@ -1,0 +1,17 @@
+﻿global using Common.Shared;
+global using Common.Shared.Exceptions;
+global using Common.Options;
+global using FluentValidation;
+global using MediatR;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;
+global using System.Reflection;
+global using System.ComponentModel.DataAnnotations;
+global using System.IdentityModel.Tokens.Jwt;
+global using System.Security.Claims;
+global using System.Security.Cryptography;
+global using System.Text;
+global using Microsoft.IdentityModel.Tokens;
+global using Serilog;
