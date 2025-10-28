@@ -182,10 +182,13 @@ namespace SampleProject.Middleware
                 "/api/v1/auth/login" => true,
                 "/api/v1/auth/refresh" => true,
                 "/api/v1/users" => true, // User registration endpoint
-                "/health" => true,
-                "/health-ui" => true,
                 "/swagger" => true,
                 _ when path?.StartsWith("/swagger/") == true => true,
+                // SECURITY: Health and metrics endpoints are only anonymous in Development
+                "/health" => context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment(),
+                "/health/live" => context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment(),
+                "/health-ui" => context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment(),
+                "/metrics" => context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment(),
                 _ => false
             };
         }

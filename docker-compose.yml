@@ -5,7 +5,7 @@ services:
   sampleproject-api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     container_name: sampleproject-api
     ports:
       - "15553:80"
@@ -13,9 +13,18 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - Database__UseInMemory=false
       - Database__ConnectionString=Host=postgres;Database=SampleProjectDb;Username=postgres;Password=postgres123;Port=5432;
-      - Jwt__SecretKey=YourSuperSecretKeyThatIsAtLeast32CharactersLongForProduction!
-      - Jwt__Issuer=SampleProject.API
-      - Jwt__Audience=SampleProject.Users
+      - JWT_SECRET_KEY=YourSuperSecretKeyThatIsAtLeast32CharactersLongForProduction!
+      - JWT_ISSUER=SampleProject.API
+      - JWT_AUDIENCE=SampleProject.Users
+      - JWT_EXPIRATION_MINUTES=60
+      - JWT_REFRESH_TOKEN_EXPIRATION_DAYS=7
+      - JWT_USE_COOKIES=true
+      - JWT_ACCESS_TOKEN_COOKIE_NAME=auth_session
+      - JWT_REFRESH_TOKEN_COOKIE_NAME=auth_refresh
+      - JWT_COOKIE_DOMAIN=
+      - JWT_COOKIE_PATH=/
+      - JWT_SECURE_COOKIES=true
+      - JWT_SAME_SITE_MODE=Strict
       - Swagger__Enabled=true
       - HealthCheck__Enabled=true
       - HealthCheck__EnableUI=true

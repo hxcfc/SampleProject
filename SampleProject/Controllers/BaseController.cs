@@ -1,8 +1,3 @@
-using SampleProject.Domain.Common;
-using SampleProject.Domain.Responses;
-using Microsoft.AspNetCore.Mvc;
-using MediatR;
-
 namespace SampleProject.Controllers
 {
     /// <summary>
@@ -25,7 +20,20 @@ namespace SampleProject.Controllers
         }
 
         /// <summary>
-        /// Handles the result of a MediatR operation and returns appropriate HTTP response
+        /// Reads XML content from a stream
+        /// </summary>
+        /// <param name="bodyContent">The stream containing XML content</param>
+        /// <returns>XML content as string</returns>
+        protected async Task<string> GetXmlBodyAsync(Stream bodyContent)
+        {
+            ArgumentNullException.ThrowIfNull(bodyContent);
+
+            using var reader = new StreamReader(bodyContent, Encoding.UTF8);
+            return await reader.ReadToEndAsync();
+        }
+
+        /// <summary>
+        /// Handles the result of a MediatR operation and returns appropriate HTTP response using RFC 7807 ProblemDetails
         /// </summary>
         /// <typeparam name="T">The type of data returned by the operation</typeparam>
         /// <param name="result">The result from MediatR operation</param>
@@ -38,15 +46,15 @@ namespace SampleProject.Controllers
                 return StatusCode(successStatusCode, result.Value);
             }
 
-            return BadRequest(new ErrorResponseModel
-            {
-                Error = StringMessages.OperationFailed,
-                ErrorDescription = result.Error ?? StringMessages.UnknownErrorOccurred
-            });
+            var problemDetails = SampleProject.Domain.Responses.ProblemDetailsFactory.CreateBadRequestProblem(
+                result.Error ?? StringMessages.UnknownErrorOccurred,
+                HttpContext.TraceIdentifier);
+
+            return BadRequest(problemDetails);
         }
 
         /// <summary>
-        /// Handles the result of a MediatR operation that doesn't return data
+        /// Handles the result of a MediatR operation that doesn't return data using RFC 7807 ProblemDetails
         /// </summary>
         /// <param name="result">The result from MediatR operation</param>
         /// <param name="successStatusCode">HTTP status code for success (default: 200)</param>
@@ -58,24 +66,11 @@ namespace SampleProject.Controllers
                 return StatusCode(successStatusCode);
             }
 
-            return BadRequest(new ErrorResponseModel
-            {
-                Error = StringMessages.OperationFailed,
-                ErrorDescription = result.Error ?? StringMessages.UnknownErrorOccurred
-            });
-        }
+            var problemDetails = SampleProject.Domain.Responses.ProblemDetailsFactory.CreateBadRequestProblem(
+                result.Error ?? StringMessages.UnknownErrorOccurred,
+                HttpContext.TraceIdentifier);
 
-        /// <summary>
-        /// Reads XML content from a stream
-        /// </summary>
-        /// <param name="bodyContent">The stream containing XML content</param>
-        /// <returns>XML content as string</returns>
-        protected async Task<string> GetXmlBodyAsync(Stream bodyContent)
-        {
-            ArgumentNullException.ThrowIfNull(bodyContent);
-
-            using var reader = new StreamReader(bodyContent, Encoding.UTF8);
-            return await reader.ReadToEndAsync();
+            return BadRequest(problemDetails);
         }
     }
 }

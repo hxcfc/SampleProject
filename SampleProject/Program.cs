@@ -137,10 +137,20 @@ namespace SampleProject
             // Security headers
             app.UseSecurityHeaders();
             
-            // HTTPS redirection (only in non-development)
+            // HTTPS redirection - ALWAYS enabled in production
+            // In development, it's optional (can be behind reverse proxy)
             if (!app.Environment.IsDevelopment())
             {
                 app.UseHttpsRedirection();
+            }
+            else
+            {
+                // In development, check if HTTPS redirection should be enabled
+                var enableHttpsRedirection = app.Configuration.GetValue<bool>("EnableHttpsRedirection", false);
+                if (enableHttpsRedirection)
+                {
+                    app.UseHttpsRedirection();
+                }
             }
             
             // Request logging

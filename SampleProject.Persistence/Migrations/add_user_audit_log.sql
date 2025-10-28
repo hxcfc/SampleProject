@@ -54,75 +54,118 @@ END $$;
 -- =====================================================
 CREATE OR REPLACE FUNCTION log_user_changes()
 RETURNS TRIGGER AS $$
+DECLARE
+    error_message TEXT;
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        -- Log user creation
-        INSERT INTO "UserAuditLogs" (
-            "Id", "UserId", "Action", "NewValue", "CreatedAt"
-        ) VALUES (
-            gen_random_uuid(), NEW."Id", 'Created', 
-            jsonb_build_object(
-                'Email', NEW."Email",
-                'FirstName', NEW."FirstName",
-                'LastName', NEW."LastName",
-                'Role', NEW."Role",
-                'IsActive', NEW."IsActive",
-                'CreatedAt', NEW."CreatedAt"
-            )::text, 
-            NOW()
-        );
-        RETURN NEW;
-
-    ELSIF TG_OP = 'UPDATE' THEN
-        -- Log only if something actually changed
-        IF (OLD."Email" IS DISTINCT FROM NEW."Email" OR
-            OLD."FirstName" IS DISTINCT FROM NEW."FirstName" OR
-            OLD."LastName" IS DISTINCT FROM NEW."LastName" OR
-            OLD."Role" IS DISTINCT FROM NEW."Role" OR
-            OLD."IsActive" IS DISTINCT FROM NEW."IsActive" OR
-            OLD."IsEmailVerified" IS DISTINCT FROM NEW."IsEmailVerified" OR
-            OLD."RefreshToken" IS DISTINCT FROM NEW."RefreshToken") THEN
-
+        BEGIN
+            -- Log user creation
             INSERT INTO "UserAuditLogs" (
-                "Id", "UserId", "Action", "OldValue", "NewValue", "CreatedAt"
+                "Id", "UserId", "Action", "NewValue", "CreatedAt"
             ) VALUES (
-                gen_random_uuid(), NEW."Id", 'Updated',
-                jsonb_build_object(
-                    'Email', OLD."Email",
-                    'FirstName', OLD."FirstName",
-                    'LastName', OLD."LastName",
-                    'Role', OLD."Role",
-                    'IsActive', OLD."IsActive",
-                    'IsEmailVerified', OLD."IsEmailVerified"
-                )::text,
+                gen_random_uuid(), NEW."Id", 'Created', 
                 jsonb_build_object(
                     'Email', NEW."Email",
                     'FirstName', NEW."FirstName",
                     'LastName', NEW."LastName",
                     'Role', NEW."Role",
                     'IsActive', NEW."IsActive",
-                    'IsEmailVerified', NEW."IsEmailVerified"
+                    'CreatedAt', NEW."CreatedAt"
+                )::text, 
+                NOW()
+            );
+            RAISE NOTICE 'Successfully logged user creation for User ID: %', NEW."Id"::text;
+            RETURN NEW;
+        EXCEPTION
+            WHEN OTHERS THEN
+                error_message := 'Failed to log user creation: ' || SQLERRM;
+                RAISE NOTICE 'ERROR in audit log (INSERT): %', error_message;
+                -- Don't fail the original operation, just log the error
+                RETURN NEW;
+        END;
+
+    ELSIF TG_OP = 'UPDATE' THEN
+        BEGIN
+            -- Log only if something actually changed
+            IF (OLD."Email" IS DISTINCT FROM NEW."Email" OR
+                OLD."FirstName" IS DISTINCT FROM NEW."FirstName" OR
+                OLD."LastName" IS DISTINCT FROM NEW."LastName" OR
+                OLD."Role" IS DISTINCT FROM NEW."Role" OR
+                OLD."IsActive" IS DISTINCT FROM NEW."IsActive" OR
+                OLD."IsEmailVerified" IS DISTINCT FROM NEW."IsEmailVerified" OR
+                OLD."RefreshToken" IS DISTINCT FROM NEW."RefreshToken") THEN
+
+                INSERT INTO "UserAuditLogs" (
+                    "Id", "UserId", "Action", "OldValue", "NewValue", "CreatedAt"
+                ) VALUES (
+                    gen_random_uuid(), NEW."Id", 'Updated',
+                    jsonb_build_object(
+                        'Email', OLD."Email",
+                        'FirstName', OLD."FirstName",
+                        'LastName', OLD."LastName",
+                        'Role', OLD."Role",
+                        'IsActive', OLD."IsActive",
+                        'IsEmailVerified', OLD."IsEmailVerified"
+                    )::text,
+                    jsonb_build_object(
+                        'Email', NEW."Email",
+                        'FirstName', NEW."FirstName",
+                        'LastName', NEW."LastName",
+                        'Role', NEW."Role",
+                        'IsActive', NEW."IsActive",
+                        'IsEmailVerified', NEW."IsEmailVerified"
+                    )::text,
+                    NOW()
+                );
+                RAISE NOTICE 'Successfully logged user update for User ID: %', NEW."Id"::text;
+            ELSE
+                RAISE NOTICE 'No changes detected for User ID: % - skipping audit log', NEW."Id"::text;
+            END IF;
+            RETURN NEW;
+        EXCEPTION
+            WHEN OTHERS THEN
+                error_message := 'Failed to log user update: ' || SQLERRM;
+                RAISE NOTICE 'ERROR in audit log (UPDATE): %', error_message;
+                -- Don't fail the original operation
+                RETURN NEW;
+        END;
+
+    ELSIF TG_OP = 'DELETE' THEN
+        BEGIN
+            -- Log user deletion
+            INSERT INTO "UserAuditLogs" (
+                "Id", "UserId", "Action", "OldValue", "CreatedAt"
+            ) VALUES (
+                gen_random_uuid(), OLD."Id", 'Deleted',
+                jsonb_build_object(
+                    'Email', OLD."Email",
+                    'FirstName', OLD."FirstName",
+                    'LastName', OLD."LastName"
                 )::text,
                 NOW()
             );
-        END IF;
-        RETURN NEW;
-
-    ELSIF TG_OP = 'DELETE' THEN
-        -- Log user deletion
-        INSERT INTO "UserAuditLogs" (
-            "Id", "UserId", "Action", "OldValue", "CreatedAt"
-        ) VALUES (
-            gen_random_uuid(), OLD."Id", 'Deleted',
-            jsonb_build_object(
-                'Email', OLD."Email",
-                'FirstName', OLD."FirstName",
-                'LastName', OLD."LastName"
-            )::text,
-            NOW()
-        );
-        RETURN OLD;
+            RAISE NOTICE 'Successfully logged user deletion for User ID: %', OLD."Id"::text;
+            RETURN OLD;
+        EXCEPTION
+            WHEN OTHERS THEN
+                error_message := 'Failed to log user deletion: ' || SQLERRM;
+                RAISE NOTICE 'ERROR in audit log (DELETE): %', error_message;
+                -- Don't fail the original operation
+                RETURN OLD;
+        END;
     END IF;
+    
+    RETURN NULL;
+EXCEPTION
+    WHEN OTHERS THEN
+        error_message := 'Critical error in audit log trigger: ' || SQLERRM;
+        RAISE NOTICE 'CRITICAL ERROR in audit log trigger: %', error_message;
+        -- Return appropriate value based on operation
+        IF TG_OP = 'DELETE' THEN
+            RETURN OLD;
+        ELSE
+            RETURN NEW;
+        END IF;
 END;
 $$ LANGUAGE plpgsql;
 

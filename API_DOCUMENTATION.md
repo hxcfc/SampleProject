@@ -7,6 +7,7 @@
 - [Monitoring & Metrics](#monitoring--metrics)
 - [API Endpoints](#api-endpoints)
 - [Error Handling](#error-handling)
+- [RFC7807 Problem Details](#rfc7807-problem-details)
 - [Examples](#examples)
 - [SDK Examples](#sdk-examples)
 
@@ -15,6 +16,13 @@
 ## 🎯 Overview
 
 **SampleProject API** is a .NET 9 Web API providing secure user authentication, management, and comprehensive monitoring capabilities.
+
+### Key Features
+- ✅ JWT authentication with HTTP-only cookies
+- ✅ RFC7807 Problem Details for standardized error responses
+- ✅ Rate limiting and security headers
+- ✅ Comprehensive monitoring and metrics
+- ✅ Clean Architecture with CQRS pattern
 
 ### Base URLs
 - **Development**: `http://localhost:15553` (HTTP) or `https://localhost:7155` (HTTPS)
@@ -25,6 +33,9 @@ All requests and responses use `application/json` content type.
 
 ### Authentication
 The API uses JWT tokens stored in HTTP-only cookies for security.
+
+### Error Handling
+The API implements RFC7807 Problem Details for HTTP APIs, providing standardized and detailed error responses.
 
 ---
 
@@ -668,9 +679,101 @@ curl -X POST http://localhost:15553/api/v1/auth/logout \
   -H "Cookie: auth_session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
-### Error Handling Example
+### Error Handling
 
-#### Rate Limit Exceeded
+The API implements RFC7807 Problem Details for HTTP APIs, providing standardized error responses with detailed information about what went wrong.
+
+#### RFC7807 Problem Details Format
+
+All error responses follow the RFC7807 standard with the following structure:
+
+```json
+{
+  "type": "https://example.com/probs/validation-error",
+  "title": "Validation Error",
+  "status": 400,
+  "detail": "The request contains invalid data",
+  "instance": "/api/v1/users",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Email is required"
+    },
+    {
+      "field": "password",
+      "message": "Password must be at least 8 characters"
+    }
+  ]
+}
+```
+
+#### Error Response Fields
+
+- **`type`**: A URI reference that identifies the problem type
+- **`title`**: A short, human-readable summary of the problem type
+- **`status`**: The HTTP status code
+- **`detail`**: A human-readable explanation specific to this occurrence
+- **`instance`**: A URI reference that identifies the specific occurrence of the problem
+- **`errors`**: Array of field-specific validation errors (for validation failures)
+
+### Error Handling Examples
+
+#### Validation Error (400 Bad Request)
+```bash
+curl -X POST http://localhost:15553/api/v1/users \
+  -H "Content-Type: application/json" \
+  -d '{"email": "invalid-email", "password": "123"}'
+
+# Response (400 Bad Request)
+{
+  "type": "https://example.com/probs/validation-error",
+  "title": "Validation Error",
+  "status": 400,
+  "detail": "The request contains invalid data",
+  "instance": "/api/v1/users",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Email format is invalid"
+    },
+    {
+      "field": "password",
+      "message": "Password must be at least 8 characters"
+    }
+  ]
+}
+```
+
+#### Authentication Error (401 Unauthorized)
+```bash
+curl -X GET http://localhost:15553/api/v1/auth/me \
+  -H "Cookie: auth_session=invalid_token"
+
+# Response (401 Unauthorized)
+{
+  "type": "https://example.com/probs/unauthorized",
+  "title": "Unauthorized",
+  "status": 401,
+  "detail": "Token is invalid or expired",
+  "instance": "/api/v1/auth/me"
+}
+```
+
+#### Not Found Error (404 Not Found)
+```bash
+curl -X GET http://localhost:15553/api/v1/users/00000000-0000-0000-0000-000000000000
+
+# Response (404 Not Found)
+{
+  "type": "https://example.com/probs/not-found",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "User with the specified ID was not found",
+  "instance": "/api/v1/users/00000000-0000-0000-0000-000000000000"
+}
+```
+
+#### Rate Limit Exceeded (429 Too Many Requests)
 ```bash
 curl -X POST http://localhost:15553/api/v1/auth/login \
   -H "Content-Type: application/json" \
@@ -678,21 +781,24 @@ curl -X POST http://localhost:15553/api/v1/auth/login \
 
 # Response (429 Too Many Requests)
 {
-  "success": false,
-  "message": "Rate limit exceeded. Please try again later.",
+  "type": "https://example.com/probs/rate-limit-exceeded",
+  "title": "Rate Limit Exceeded",
+  "status": 429,
+  "detail": "Too many requests. Please try again later.",
+  "instance": "/api/v1/auth/login",
   "retryAfter": 60
 }
 ```
 
-#### Invalid Token
+#### Internal Server Error (500 Internal Server Error)
 ```bash
-curl -X GET http://localhost:15553/api/v1/auth/me \
-  -H "Cookie: auth_session=invalid_token"
-
-# Response (401 Unauthorized)
+# Response (500 Internal Server Error)
 {
-  "success": false,
-  "message": "Token is invalid or expired"
+  "type": "https://example.com/probs/internal-server-error",
+  "title": "Internal Server Error",
+  "status": 500,
+  "detail": "An unexpected error occurred while processing your request",
+  "instance": "/api/v1/users"
 }
 ```
 

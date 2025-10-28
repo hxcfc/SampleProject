@@ -1,5 +1,4 @@
 using Common.Shared.Exceptions;
-using System.Net;
 
 namespace SampleProject.Middleware
 {
@@ -61,66 +60,60 @@ namespace SampleProject.Middleware
         }
 
         /// <summary>
-        /// Handles the exception and returns appropriate response
+        /// Handles the exception and returns appropriate response using RFC 7807 ProblemDetails
         /// </summary>
         /// <param name="context">HTTP context</param>
         /// <param name="exception">Exception that occurred</param>
         /// <returns>Task</returns>
         private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            context.Response.ContentType = StringMessages.ApplicationJsonContentType;
+            context.Response.ContentType = "application/problem+json";
 
-            var response = new ErrorResponseModel();
+            var traceId = context.TraceIdentifier;
+            SampleProject.Domain.Responses.ProblemDetails problemDetails;
 
             switch (exception)
             {
                 case BadRequestException ex:
-                    response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response.Message = ex.Message;
-                    response.Details = ex.Message;
+                    problemDetails = ProblemDetailsFactory.CreateBadRequestProblem(ex.Message, traceId);
                     break;
 
                 case UnauthorizedException ex:
-                    response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    response.Message = ex.Message;
-                    response.Details = ex.Message;
+                    problemDetails = ProblemDetailsFactory.CreateUnauthorizedProblem(ex.Message, traceId);
                     break;
 
                 case ForbiddenException ex:
-                    response.StatusCode = (int)HttpStatusCode.Forbidden;
-                    response.Message = ex.Message;
-                    response.Details = ex.Message;
+                    problemDetails = ProblemDetailsFactory.CreateForbiddenProblem(ex.Message, traceId);
                     break;
 
                 case NotFoundException ex:
-                    response.StatusCode = (int)HttpStatusCode.NotFound;
-                    response.Message = ex.Message;
-                    response.Details = ex.Message;
+                    problemDetails = ProblemDetailsFactory.CreateNotFoundProblem(ex.Message, traceId);
                     break;
 
                 case DbBadRequestException ex:
-                    response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response.Message = ex.Message;
-                    response.Details = ex.Message;
+                    problemDetails = ProblemDetailsFactory.CreateDatabaseErrorProblem(ex.Message, traceId);
                     break;
 
                 case ValidationException ex:
-                    response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response.Message = StringMessages.ValidationError;
-                    response.Details = ex.Errors.Select(e => new { Field = e.PropertyName, Error = e.ErrorMessage }).ToList();
+                    var validationErrors = ex.Errors
+                        .GroupBy(e => e.PropertyName)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.Select(e => e.ErrorMessage).ToArray()
+                        );
+                    problemDetails = ProblemDetailsFactory.CreateValidationProblem(validationErrors, traceId);
                     break;
 
                 default:
-                    response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    response.Message = StringMessages.ContactDeveloper;
-                    response.Details = StringMessages.UnexpectedErrorOccurred;
+                    problemDetails = ProblemDetailsFactory.CreateInternalServerErrorProblem(
+                        StringMessages.UnexpectedErrorOccurred, traceId);
                     break;
             }
 
             // Only modify response if it hasn't started yet and response body is empty
             var canModifyResponse = !context.Response.HasStarted;
             var isBodyEmpty = true;
-            
+
             try
             {
                 isBodyEmpty = context.Response.Body.CanRead && context.Response.Body.Length == 0;
@@ -130,12 +123,12 @@ namespace SampleProject.Middleware
                 // If stream is disposed, consider it as not empty to avoid modification
                 isBodyEmpty = false;
             }
-            
+
             if (canModifyResponse && isBodyEmpty)
             {
-                context.Response.StatusCode = response.StatusCode;
+                context.Response.StatusCode = problemDetails.Status ?? 500;
 
-                var jsonResponse = JsonSerializer.Serialize(response, new JsonSerializerOptions
+                var jsonResponse = JsonSerializer.Serialize(problemDetails, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                     WriteIndented = true

@@ -25,18 +25,26 @@ namespace SampleProject.Installers.InstallServices.HealthCheck
                 return;
             }
 
-            // Configure health check endpoints
-            app.MapHealthChecks($"/{healthCheckOptions.EndpointPath.TrimStart('/')}", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+            // Configure health check endpoints with security
+            var healthCheckBuilder = app.MapHealthChecks($"/{healthCheckOptions.EndpointPath.TrimStart('/')}", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
             {
                 ResponseWriter = healthCheckOptions.EnableDetailedResponses ? WriteHealthCheckResponse : WriteSimpleHealthCheckResponse,
                 Predicate = check => check.Tags.Contains("ready")
             });
 
-            app.MapHealthChecks($"/{healthCheckOptions.EndpointPath.TrimStart('/')}/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+            var liveHealthCheckBuilder = app.MapHealthChecks($"/{healthCheckOptions.EndpointPath.TrimStart('/')}/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
             {
                 ResponseWriter = healthCheckOptions.EnableDetailedResponses ? WriteHealthCheckResponse : WriteSimpleHealthCheckResponse,
                 Predicate = check => check.Tags.Contains("live")
             });
+
+            // SECURITY: In production, require authentication for health checks
+            if (!app.Environment.IsDevelopment())
+            {
+                healthCheckBuilder.RequireAuthorization();
+                liveHealthCheckBuilder.RequireAuthorization();
+                Log.Warning("Health check endpoints secured with authentication in Production environment");
+            }
 
             // Configure health check UI if enabled and in development
             if (healthCheckOptions.EnableUI && app.Environment.IsDevelopment())

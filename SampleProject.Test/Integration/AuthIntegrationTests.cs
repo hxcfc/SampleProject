@@ -25,6 +25,10 @@ namespace SampleProject.Test.Integration
         {
             _factory = factory.WithWebHostBuilder(builder =>
             {
+                Environment.SetEnvironmentVariable("JWT_SECRET_KEY", "TestSecretKeyThatIsAtLeast32CharactersLong!");
+                Environment.SetEnvironmentVariable("JWT_ISSUER", "SampleProject.API.Test");
+                Environment.SetEnvironmentVariable("JWT_AUDIENCE", "SampleProject.Users.Test");
+                ;
                 builder.ConfigureServices(services =>
                 {
                     // Remove the real database

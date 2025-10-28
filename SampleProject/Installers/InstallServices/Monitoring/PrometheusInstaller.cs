@@ -33,8 +33,15 @@ namespace SampleProject.Installers.InstallServices.Monitoring
         /// <param name="app">Web application</param>
         public void ConfigureServices(WebApplication app)
         {
-            // Enable Prometheus metrics endpoint
-            app.UseMetricServer();
+            // Enable Prometheus metrics endpoint with security
+            var metricsBuilder = app.MapMetrics();
+            
+            // SECURITY: In production, require authentication for metrics endpoint
+            if (!app.Environment.IsDevelopment())
+            {
+                metricsBuilder.RequireAuthorization();
+                Log.Warning("Prometheus metrics endpoint secured with authentication in Production environment");
+            }
             
             // Enable Prometheus metrics for HTTP requests
             app.UseHttpMetrics();

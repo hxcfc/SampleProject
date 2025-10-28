@@ -61,10 +61,11 @@ namespace SampleProject.Test.Unit.Middleware
 
             // Assert
             _context.Response.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
-            _context.Response.ContentType.Should().Be("application/json");
+            _context.Response.ContentType.Should().Be("application/problem+json");
 
             var responseBody = await GetResponseBody(_context);
             responseBody.Should().Contain("Bad request message");
+            responseBody.Should().Contain("Bad Request");
         }
 
         [Fact]
@@ -83,10 +84,11 @@ namespace SampleProject.Test.Unit.Middleware
 
             // Assert
             _context.Response.StatusCode.Should().Be((int)HttpStatusCode.Unauthorized);
-            _context.Response.ContentType.Should().Be("application/json");
+            _context.Response.ContentType.Should().Be("application/problem+json");
 
             var responseBody = await GetResponseBody(_context);
             responseBody.Should().Contain("Unauthorized message");
+            responseBody.Should().Contain("Unauthorized");
         }
 
         [Fact]
@@ -105,10 +107,11 @@ namespace SampleProject.Test.Unit.Middleware
 
             // Assert
             _context.Response.StatusCode.Should().Be((int)HttpStatusCode.Forbidden);
-            _context.Response.ContentType.Should().Be("application/json");
+            _context.Response.ContentType.Should().Be("application/problem+json");
 
             var responseBody = await GetResponseBody(_context);
             responseBody.Should().Contain("Forbidden message");
+            responseBody.Should().Contain("Forbidden");
         }
 
         [Fact]
@@ -127,10 +130,11 @@ namespace SampleProject.Test.Unit.Middleware
 
             // Assert
             _context.Response.StatusCode.Should().Be((int)HttpStatusCode.NotFound);
-            _context.Response.ContentType.Should().Be("application/json");
+            _context.Response.ContentType.Should().Be("application/problem+json");
 
             var responseBody = await GetResponseBody(_context);
             responseBody.Should().Contain("Not found message");
+            responseBody.Should().Contain("Not Found");
         }
 
         [Fact]
@@ -155,10 +159,12 @@ namespace SampleProject.Test.Unit.Middleware
 
             // Assert
             _context.Response.StatusCode.Should().Be((int)HttpStatusCode.BadRequest);
-            _context.Response.ContentType.Should().Be("application/json");
+            _context.Response.ContentType.Should().Be("application/problem+json");
 
             var responseBody = await GetResponseBody(_context);
-            responseBody.Should().Contain("Validation error");
+            responseBody.Should().Contain("One or more validation errors occurred");
+            responseBody.Should().Contain("Email is required");
+            responseBody.Should().Contain("Password is required");
         }
 
         [Fact]
@@ -177,10 +183,11 @@ namespace SampleProject.Test.Unit.Middleware
 
             // Assert
             _context.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
-            _context.Response.ContentType.Should().Be("application/json");
+            _context.Response.ContentType.Should().Be("application/problem+json");
 
             var responseBody = await GetResponseBody(_context);
-            responseBody.Should().Contain("Please contact the application developer");
+            responseBody.Should().Contain("Internal Server Error");
+            responseBody.Should().Contain("An unexpected error occurred");
         }
 
         [Fact]

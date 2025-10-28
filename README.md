@@ -9,6 +9,7 @@
 - [Logging](#logging)
 - [Database](#database)
 - [Getting Started](#getting-started)
+- [CI/CD and GitHub Actions](#cicd-and-github-actions)
 
 ---
 
@@ -25,11 +26,14 @@
 - ✅ Comprehensive audit logging for user changes
 - ✅ Token history tracking and usage monitoring
 - ✅ Request/response logging middleware
-- ✅ Global exception handling
+- ✅ Global exception handling with RFC7807 Problem Details
 - ✅ Health checks with UI dashboard
 - ✅ Swagger documentation with demo credentials
 - ✅ PostgreSQL database with EF Core
 - ✅ Clean Architecture (API, Application, Domain, Infrastructure, Persistence)
+- ✅ Enhanced testing infrastructure with TestWebApplicationFactory
+- ✅ Docker multi-stage build configuration
+- ✅ Production and test environment configurations
 
 ---
 
@@ -789,25 +793,100 @@ psql -U your_username -d your_database -f SampleProject.Persistence/Migrations/a
 psql -U your_username -d your_database -f SampleProject.Persistence/Migrations/audit_log_trigger_enhanced.sql
 ```
 
-4. **Run the application (local)**
+4. **Run tests**
+```bash
+# Run all tests
+dotnet test
+
+# Run tests with coverage
+dotnet test --collect:"XPlat Code Coverage"
+
+# Run specific test project
+dotnet test SampleProject.Test
+```
+
+5. **Run the application (local)**
 ```bash
 cd SampleProject
 dotnet run
 ```
 
-5. **Docker (optional)**
+6. **Docker (optional)**
 ```bash
+# Development environment
 docker compose up -d --build
+
+# Production environment
+docker compose -f docker-compose.prod.yml up -d --build
+
+# Access points:
 # API: http://localhost:15553
 # Swagger: http://localhost:15553/swagger
 # Health: http://localhost:15553/health
 # Metrics: http://localhost:15553/metrics
 ```
 
-6. **Access the application**
+7. **Access the application**
 - API: `http://localhost:15553` (HTTP) or `https://localhost:7155` (HTTPS)
 - Swagger: `http://localhost:15553/swagger` (Development only)
 - Health UI: `http://localhost:15553/health-ui` (Development only)
+
+---
+
+## 🔄 CI/CD and GitHub Actions
+
+### Automated Workflows
+
+The project includes GitHub Actions workflows for continuous integration and deployment:
+
+#### **Docker Publish Workflow** (`.github/workflows/docker-publish.yml`)
+- **Trigger**: Push to tags `v*` or manual dispatch
+- **Features**:
+  - Runs all tests with JWT environment variables
+  - Builds and publishes Docker image to GitHub Container Registry
+  - Uses multi-stage Docker build with build arguments
+  - Supports both `latest` and versioned tags
+
+#### **Workflow Steps**:
+1. **Setup**: .NET 9 SDK installation
+2. **Test**: Runs all unit and integration tests
+3. **Build**: Compiles the application
+4. **Docker**: Builds and pushes container image
+5. **Registry**: Publishes to `ghcr.io`
+
+#### **Environment Variables for Tests**:
+```yaml
+JWT_SECRET_KEY: TestSecretKeyThatIsAtLeast32CharactersLong!
+JWT_ISSUER: SampleProject.API.Test
+JWT_AUDIENCE: SampleProject.Users.Test
+# ... other JWT and configuration variables
+```
+
+### Docker Configuration
+
+#### **Multi-stage Build** (`docker/Dockerfile`)
+- **Build Stage**: .NET 9 SDK with build arguments
+- **Runtime Stage**: .NET 9 ASP.NET runtime
+- **Features**:
+  - JWT configuration via build arguments
+  - Optimized image size
+  - Security best practices
+
+#### **Docker Compose Files**:
+- **Development** (`docker-compose.yml`): Full stack with monitoring
+- **Production** (`docker-compose.prod.yml`): Optimized for production
+
+### Testing Infrastructure
+
+#### **TestWebApplicationFactory**
+- Custom test factory for integration tests
+- Configures test environment with proper JWT settings
+- Supports both in-memory and real database testing
+
+#### **Test Coverage**:
+- **Unit Tests**: Controllers, middleware, services
+- **Integration Tests**: Full API endpoints with authentication
+- **Health Check Tests**: Comprehensive health monitoring tests
 
 ---
 
@@ -837,13 +916,15 @@ docker compose up -d --build
 - ✅ Password hashing with salt (BCrypt)
 - ✅ Rate limiting with configurable limits
 - ✅ Correlation ID tracking for security monitoring
-- ✅ Global exception handling
+- ✅ Global exception handling with RFC7807 Problem Details
 - ✅ Request/response logging
 - ✅ Security headers middleware (XSS, CSRF, clickjacking protection)
 - ✅ Comprehensive audit logging for user changes
 - ✅ Token history tracking and usage monitoring
 - ✅ CORS configuration
 - ✅ Advanced monitoring and metrics
+- ✅ Enhanced testing infrastructure
+- ✅ Docker multi-stage build
 
 ---
 

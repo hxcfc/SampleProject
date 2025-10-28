@@ -21,7 +21,25 @@ namespace SampleProject.Installers.InstallServices.Authentication
         /// <param name="configuration">Configuration</param>
         public void InstallServices(IServiceCollection services, IConfiguration configuration)
         {
-            var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
+            // Get JWT options - combine environment variables (sensitive data) with appsettings (technical config)
+            var jwtOptions = new JwtOptions
+            {
+                // Sensitive data from environment variables
+                SecretKey = configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY environment variable is required"),
+                Issuer = configuration["JWT_ISSUER"] ?? throw new InvalidOperationException("JWT_ISSUER environment variable is required"),
+                Audience = configuration["JWT_AUDIENCE"] ?? throw new InvalidOperationException("JWT_AUDIENCE environment variable is required"),
+                
+                // Technical configuration from appsettings.json
+                ExpirationMinutes = configuration.GetValue<int>("Jwt:ExpirationMinutes", 60),
+                RefreshTokenExpirationDays = configuration.GetValue<int>("Jwt:RefreshTokenExpirationDays", 7),
+                UseCookies = configuration.GetValue<bool>("Jwt:UseCookies", true),
+                AccessTokenCookieName = configuration.GetValue<string>("Jwt:AccessTokenCookieName", "auth_session"),
+                RefreshTokenCookieName = configuration.GetValue<string>("Jwt:RefreshTokenCookieName", "auth_refresh"),
+                CookieDomain = configuration.GetValue<string>("Jwt:CookieDomain"),
+                CookiePath = configuration.GetValue<string>("Jwt:CookiePath", "/"),
+                SecureCookies = configuration.GetValue<bool>("Jwt:SecureCookies", true),
+                SameSiteMode = configuration.GetValue<string>("Jwt:SameSiteMode", "Strict")
+            };
             
             if (string.IsNullOrEmpty(jwtOptions.SecretKey))
             {

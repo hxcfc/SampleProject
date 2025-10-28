@@ -313,7 +313,7 @@ FOR EACH ROW EXECUTE FUNCTION log_user_changes();
 
 ### Enhanced Audit Log Migration Script
 
-**File**: `SampleProject.Persistence/Migrations/audit_log_trigger_enhanced.sql`
+**File**: `SampleProject.Persistence/Migrations/audit_log_trigger_with_error_handling.sql`
 
 ```sql
 -- Enhanced Audit Log Trigger for User Changes
@@ -577,7 +577,7 @@ psql -U your_username -d your_database
 \i SampleProject.Persistence/Migrations/add_user_audit_log.sql
 
 # Run enhanced audit migration
-\i SampleProject.Persistence/Migrations/audit_log_trigger_enhanced.sql
+\i SampleProject.Persistence/Migrations/audit_log_trigger_with_error_handling.sql
 ```
 
 #### **Option 2: Using pgAdmin**
@@ -586,7 +586,7 @@ psql -U your_username -d your_database
 3. Right-click on database → Query Tool
 4. Open and run the SQL files in order:
    - `add_user_audit_log.sql`
-   - `audit_log_trigger_enhanced.sql`
+   - `audit_log_trigger_with_error_handling.sql`
 
 #### **Option 3: Using Entity Framework (Recommended)**
 ```bash
@@ -598,13 +598,13 @@ dotnet ef database update --project SampleProject.Persistence
 
 # Run custom SQL scripts
 psql -U your_username -d your_database -f SampleProject.Persistence/Migrations/add_user_audit_log.sql
-psql -U your_username -d your_database -f SampleProject.Persistence/Migrations/audit_log_trigger_enhanced.sql
+psql -U your_username -d your_database -f SampleProject.Persistence/Migrations/audit_log_trigger_with_error_handling.sql
 ```
 
 ### Migration Order
 1. **EF Core Migrations**: Standard schema changes
 2. **Basic Audit Migration**: `add_user_audit_log.sql`
-3. **Enhanced Audit Migration**: `audit_log_trigger_enhanced.sql`
+3. **Enhanced Audit Migration**: `audit_log_trigger_with_error_handling.sql`
 
 ---
 
@@ -681,7 +681,7 @@ AND table_name IN ('Users', 'UserAuditLogs');
 -- Check if trigger exists
 SELECT tgname 
 FROM pg_trigger 
-WHERE tgname = 'user_audit_trigger_enhanced';
+WHERE tgname = 'user_audit_trigger_with_error_handling';
 
 -- Check new columns in Users table
 SELECT column_name, data_type, is_nullable, column_default
@@ -756,11 +756,12 @@ AND tablename IN ('Users', 'UserAuditLogs');
 
 ```sql
 -- Rollback enhanced audit migration
-DROP TRIGGER IF EXISTS user_audit_trigger_enhanced ON "Users";
-DROP FUNCTION IF EXISTS log_user_changes_enhanced();
-DROP FUNCTION IF EXISTS get_user_audit_history(UUID, INTEGER);
-DROP FUNCTION IF EXISTS get_audit_statistics();
-DROP FUNCTION IF EXISTS get_token_usage_statistics();
+DROP TRIGGER IF EXISTS user_audit_trigger_with_error_handling ON "Users";
+DROP FUNCTION IF EXISTS log_user_changes_with_error_handling();
+DROP FUNCTION IF EXISTS get_audit_log_errors(TIMESTAMP, TIMESTAMP);
+DROP FUNCTION IF EXISTS cleanup_audit_log_errors(INTEGER);
+DROP FUNCTION IF EXISTS get_audit_log_statistics();
+DROP TABLE IF EXISTS "AuditLogErrors";
 ```
 
 ### Rollback Basic Audit Migration
@@ -866,19 +867,19 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO your_username;
 -- Check if trigger is enabled
 SELECT tgname, tgenabled 
 FROM pg_trigger 
-WHERE tgname = 'user_audit_trigger_enhanced';
+WHERE tgname = 'user_audit_trigger_with_error_handling';
 
 -- Enable trigger if disabled
-ALTER TABLE "Users" ENABLE TRIGGER user_audit_trigger_enhanced;
+ALTER TABLE "Users" ENABLE TRIGGER user_audit_trigger_with_error_handling;
 ```
 
 #### **Function Compilation Errors**
 ```sql
 -- Check function definition
-SELECT prosrc FROM pg_proc WHERE proname = 'log_user_changes_enhanced';
+SELECT prosrc FROM pg_proc WHERE proname = 'log_user_changes_with_error_handling';
 
 -- Recreate function if needed
-DROP FUNCTION IF EXISTS log_user_changes_enhanced();
+DROP FUNCTION IF EXISTS log_user_changes_with_error_handling();
 -- Then run the function creation script again
 ```
 

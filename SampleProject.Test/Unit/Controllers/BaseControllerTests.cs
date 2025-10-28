@@ -1,5 +1,6 @@
 using FluentAssertions;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using SampleProject.Controllers;
@@ -17,11 +18,20 @@ namespace SampleProject.Test.Unit.Controllers
     {
         private readonly TestController _controller;
         private readonly Mock<IMediator> _mediatorMock;
+        private readonly DefaultHttpContext _httpContext;
 
         public BaseControllerTests()
         {
             _mediatorMock = new Mock<IMediator>();
-            _controller = new TestController(_mediatorMock.Object);
+            _httpContext = new DefaultHttpContext();
+            _httpContext.TraceIdentifier = "test-trace-id";
+            _controller = new TestController(_mediatorMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = _httpContext
+                }
+            };
         }
 
         [Fact]
@@ -65,11 +75,12 @@ namespace SampleProject.Test.Unit.Controllers
             // Assert
             response.Should().BeOfType<BadRequestObjectResult>();
             var badRequestResult = response as BadRequestObjectResult;
-            badRequestResult!.Value.Should().BeOfType<ErrorResponseModel>();
+            badRequestResult!.Value.Should().BeOfType<SampleProject.Domain.Responses.ProblemDetails>();
 
-            var errorModel = badRequestResult.Value as ErrorResponseModel;
-            errorModel!.Error.Should().Be("Operation Failed");
-            errorModel.ErrorDescription.Should().Be(errorMessage);
+            var problemDetails = badRequestResult.Value as SampleProject.Domain.Responses.ProblemDetails;
+            problemDetails!.Status.Should().Be(400);
+            problemDetails.Title.Should().Be("Bad Request");
+            problemDetails.Detail.Should().Be(errorMessage);
         }
 
         [Fact]
@@ -84,11 +95,12 @@ namespace SampleProject.Test.Unit.Controllers
             // Assert
             response.Should().BeOfType<BadRequestObjectResult>();
             var badRequestResult = response as BadRequestObjectResult;
-            badRequestResult!.Value.Should().BeOfType<ErrorResponseModel>();
+            badRequestResult!.Value.Should().BeOfType<SampleProject.Domain.Responses.ProblemDetails>();
 
-            var errorModel = badRequestResult.Value as ErrorResponseModel;
-            errorModel!.Error.Should().Be("Operation Failed");
-            errorModel.ErrorDescription.Should().Be("Unknown error occurred");
+            var problemDetails = badRequestResult.Value as SampleProject.Domain.Responses.ProblemDetails;
+            problemDetails!.Status.Should().Be(400);
+            problemDetails.Title.Should().Be("Bad Request");
+            problemDetails.Detail.Should().Be("Unknown error occurred");
         }
 
         [Fact]
@@ -104,11 +116,12 @@ namespace SampleProject.Test.Unit.Controllers
             // Assert
             response.Should().BeOfType<BadRequestObjectResult>();
             var badRequestResult = response as BadRequestObjectResult;
-            badRequestResult!.Value.Should().BeOfType<ErrorResponseModel>();
+            badRequestResult!.Value.Should().BeOfType<SampleProject.Domain.Responses.ProblemDetails>();
 
-            var errorModel = badRequestResult.Value as ErrorResponseModel;
-            errorModel!.Error.Should().Be("Operation Failed");
-            errorModel.ErrorDescription.Should().Be(errorMessage);
+            var problemDetails = badRequestResult.Value as SampleProject.Domain.Responses.ProblemDetails;
+            problemDetails!.Status.Should().Be(400);
+            problemDetails.Title.Should().Be("Bad Request");
+            problemDetails.Detail.Should().Be(errorMessage);
         }
 
         [Fact]
