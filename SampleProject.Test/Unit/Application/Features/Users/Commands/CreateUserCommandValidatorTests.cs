@@ -507,6 +507,7 @@ namespace SampleProject.Test.Unit.Application.Features.Users.Commands
             // Act
             var result = _validator.Validate(command);
 
+
             // Assert
             result.IsValid.Should().BeFalse();
             result.Errors.Should().HaveCount(5);

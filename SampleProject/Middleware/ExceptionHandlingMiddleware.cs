@@ -1,4 +1,5 @@
 using Common.Shared.Exceptions;
+using SampleProject.Application.Exceptions;
 
 namespace SampleProject.Middleware
 {
@@ -94,7 +95,11 @@ namespace SampleProject.Middleware
                     problemDetails = ProblemDetailsFactory.CreateDatabaseErrorProblem(ex.Message, traceId);
                     break;
 
-                case ValidationException ex:
+                case SampleProject.Application.Exceptions.ValidationException ex:
+                    problemDetails = ProblemDetailsFactory.CreateValidationProblem(ex.Errors, traceId);
+                    break;
+
+                case FluentValidation.ValidationException ex:
                     var validationErrors = ex.Errors
                         .GroupBy(e => e.PropertyName)
                         .ToDictionary(

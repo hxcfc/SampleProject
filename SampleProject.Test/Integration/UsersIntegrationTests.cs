@@ -23,14 +23,17 @@ namespace SampleProject.Test.Integration
 
         public UsersIntegrationTests(WebApplicationFactory<Program> factory)
         {
+            // Set environment variables before configuring services
+            Environment.SetEnvironmentVariable("JWT_SECRET_KEY", "TestSecretKeyThatIsAtLeast32CharactersLong!");
+            Environment.SetEnvironmentVariable("JWT_ISSUER", "SampleProject.API.Test");
+            Environment.SetEnvironmentVariable("JWT_AUDIENCE", "SampleProject.Users.Test");
+            Environment.SetEnvironmentVariable("JWT_SECURE_COOKIES", "true");
+            Environment.SetEnvironmentVariable("JWT_SAME_SITE_MODE", "None");
+
             _factory = factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureServices(services =>
                 {
-                    Environment.SetEnvironmentVariable("JWT_SECRET_KEY", "TestSecretKeyThatIsAtLeast32CharactersLong!");
-                    Environment.SetEnvironmentVariable("JWT_ISSUER", "SampleProject.API.Test");
-                    Environment.SetEnvironmentVariable("JWT_AUDIENCE", "SampleProject.Users.Test");
-                    ;
                     // Remove the real database
                     var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
                     if (descriptor != null)
@@ -332,7 +335,7 @@ namespace SampleProject.Test.Integration
             await LoginAsAdmin();
             var updateRequest = new
             {
-                FirstName = "AdminUpdated",
+                FirstName = "AdminNew",
                 LastName = "Name",
                 IsActive = true
             };
@@ -343,7 +346,7 @@ namespace SampleProject.Test.Integration
             // Assert
             response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
-            content.Should().Contain("AdminUpdated");
+            content.Should().Contain("AdminNew");
         }
 
         [Fact]

@@ -1,3 +1,4 @@
+using MediatR;
 using SampleProject.Domain.Common;
 using SampleProject.Domain.Responses;
 

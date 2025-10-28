@@ -51,6 +51,17 @@ RUN chown -R app:app /app
 # Switch to non-root user
 USER app
 
+# Set default environment variables for development
+ENV JWT_SECRET_KEY="DefaultSecretKeyForDevelopmentOnlyChangeInProduction123456789"
+ENV JWT_ISSUER="SampleProject.API"
+ENV JWT_AUDIENCE="SampleProject.Users"
+ENV JWT_ACCESS_TOKEN_EXPIRATION_MINUTES="60"
+ENV JWT_REFRESH_TOKEN_EXPIRATION_DAYS="7"
+ENV JWT_ACCESS_TOKEN_COOKIE_NAME="auth_session"
+ENV JWT_REFRESH_TOKEN_COOKIE_NAME="auth_refresh"
+ENV JWT_SECURE_COOKIES="false"
+ENV JWT_SAME_SITE_MODE="Lax"
+
 EXPOSE 80
 
 # Health check

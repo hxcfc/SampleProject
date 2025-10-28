@@ -1,18 +1,21 @@
 using FluentValidation;
 using SampleProject.Domain.Enums;
+using SampleProject.Application.Common;
 
 namespace SampleProject.Application.Features.Users.Commands.ChangeUserRole
 {
     /// <summary>
     /// Validator for ChangeUserRoleCommand
     /// </summary>
-    public class ChangeUserRoleCommandValidator : AbstractValidator<ChangeUserRoleCommand>
+    public class ChangeUserRoleCommandValidator : BaseValidator<ChangeUserRoleCommand>
     {
         public ChangeUserRoleCommandValidator()
         {
             RuleFor(x => x.UserId)
                 .NotEmpty()
-                .WithMessage("User ID is required");
+                .WithMessage("User ID is required")
+                .Must(BeValidGuid)
+                .WithMessage("User ID cannot be empty GUID");
 
             RuleFor(x => x.NewRole)
                 .Must(BeValidSingleRole)

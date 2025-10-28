@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using SampleProject.Application.Exceptions;
 
 namespace SampleProject.Application.Behaviors
 {
@@ -41,7 +42,7 @@ namespace SampleProject.Application.Behaviors
                     {
                         System.Console.WriteLine($"ValidationBehavior: {failure.PropertyName} - {failure.ErrorMessage}");
                     }
-                    throw new FluentValidation.ValidationException(failures);
+                    throw new SampleProject.Application.Exceptions.ValidationException(failures);
                 }
             }
             else

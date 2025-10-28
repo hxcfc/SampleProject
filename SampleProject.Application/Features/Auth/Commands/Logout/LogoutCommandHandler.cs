@@ -1,3 +1,4 @@
+using MediatR;
 using SampleProject.Application.Interfaces;
 using SampleProject.Application.Interfaces.SampleProject.Authorization;
 using SampleProject.Domain.Common;

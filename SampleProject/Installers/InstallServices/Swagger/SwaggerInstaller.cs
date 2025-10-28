@@ -92,8 +92,8 @@ namespace SampleProject.Installers.InstallServices.Swagger
                         catch (Exception ex)
                         {
                             Log.Error(ex, "Error in Swagger authentication middleware");
-                            context.Response.StatusCode = 500;
-                            await context.Response.WriteAsync("Internal Server Error", context.RequestAborted);
+                            // Re-throw the exception to let the global exception handler deal with it
+                            throw;
                         }
                     });
                 }
