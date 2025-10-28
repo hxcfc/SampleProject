@@ -40,8 +40,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
-RUN addgroup --system --gid 1001 app && \
-    adduser --system --uid 1001 --gid 1001 app
+RUN groupadd -r app 2>/dev/null || true && useradd -r -g app app 2>/dev/null || true
 
 WORKDIR /app
 COPY --from=build /app/publish .
