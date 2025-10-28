@@ -88,19 +88,19 @@ namespace SampleProject.Domain.Entities
         public DateTime? RefreshTokenExpiryTime { get; set; }
 
         /// <summary>
-        /// Number of times the refresh token has been used
-        /// </summary>
-        public int RefreshTokenUseCount { get; set; } = 0;
-
-        /// <summary>
         /// Date and time when the current refresh token was last used
         /// </summary>
         public DateTime? RefreshTokenLastUsedAt { get; set; }
 
         /// <summary>
-        /// User roles as enum flags
+        /// Number of times the refresh token has been used
         /// </summary>
-        public UserRole Roles { get; set; } = UserRole.User;
+        public int RefreshTokenUseCount { get; set; } = 0;
+
+        /// <summary>
+        /// User Role as enum flags
+        /// </summary>
+        public UserRole Role { get; set; } = UserRole.User;
 
         /// <summary>
         /// Date and time when the user was last updated

@@ -1,6 +1,6 @@
 using MediatR;
 using SampleProject.Domain.Common;
-using SampleProject.Domain.Dto;
+using SampleProject.Application.Dto;
 
 namespace SampleProject.Application.Features.Users.Commands.CreateUser
 {

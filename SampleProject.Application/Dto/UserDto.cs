@@ -1,7 +1,8 @@
-using SampleProject.Domain.Enums;
 using SampleProject.Domain.Entities;
+using SampleProject.Domain.Enums;
+using System.Text.Json.Serialization;
 
-namespace SampleProject.Domain.Dto
+namespace SampleProject.Application.Dto
 {
     /// <summary>
     /// Data Transfer Object for User entity
@@ -55,9 +56,9 @@ namespace SampleProject.Domain.Dto
         public required string LastName { get; set; }
 
         /// <summary>
-        /// User roles as enum flags
+        /// User Role as enum flags
         /// </summary>
-        public UserRole Roles { get; set; } = UserRole.User;
+        public UserRole Role { get; set; } = UserRole.User;
 
         /// <summary>
         /// Date and time when the user was last updated
@@ -77,7 +78,7 @@ namespace SampleProject.Domain.Dto
                 Email = entity.Email,
                 FirstName = entity.FirstName,
                 LastName = entity.LastName,
-                Roles = entity.Roles,
+                Role = entity.Role,
                 IsActive = entity.IsActive,
                 IsEmailVerified = entity.IsEmailVerified,
                 CreatedAt = entity.CreatedAt,

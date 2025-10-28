@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using SampleProject.Application.Interfaces;
-using SampleProject.Domain.Dto;
 using SampleProject.Domain.Responses;
 using System.Security.Claims;
-using Common.Shared;
 
 namespace SampleProject.Infrastructure.Implementations
 {
@@ -33,7 +31,7 @@ namespace SampleProject.Infrastructure.Implementations
             var email = user.FindFirst(ClaimTypes.Email)?.Value;
             var firstName = user.FindFirst(ClaimTypes.GivenName)?.Value;
             var lastName = user.FindFirst(ClaimTypes.Surname)?.Value;
-            var roles = user.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            var role = user.FindFirst(ClaimTypes.Role)?.Value;
 
             var fullName = string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(lastName)
                 ? null
@@ -47,14 +45,8 @@ namespace SampleProject.Infrastructure.Implementations
                 FirstName = firstName,
                 LastName = lastName,
                 FullName = fullName,
-                Roles = roles
+                Role = role
             };
-        }
-
-        public string? GetCurrentUserId()
-        {
-            var httpContext = _httpContextAccessor.HttpContext;
-            return httpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
 
         public string? GetCurrentUserEmail()
@@ -63,21 +55,27 @@ namespace SampleProject.Infrastructure.Implementations
             return httpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
         }
 
-        public List<string> GetCurrentUserRoles()
+        public string? GetCurrentUserId()
+        {
+            var httpContext = _httpContextAccessor.HttpContext;
+            return httpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
+        public string? GetCurrentUserRole()
         {
             var httpContext = _httpContextAccessor.HttpContext;
             if (httpContext?.User?.Identity?.IsAuthenticated != true)
             {
-                return new List<string>();
+                return String.Empty;
             }
 
-            return httpContext.User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+            return httpContext.User.FindFirst(ClaimTypes.Role)?.Value;
         }
 
-        public bool IsAuthenticated()
+        public bool HasRole(string role)
         {
-            var httpContext = _httpContextAccessor.HttpContext;
-            return httpContext?.User?.Identity?.IsAuthenticated == true;
+            var userRole = GetCurrentUserRole();
+            return userRole == role;
         }
 
         public bool IsAdmin()
@@ -85,10 +83,10 @@ namespace SampleProject.Infrastructure.Implementations
             return HasRole(StringMessages.AdminRole);
         }
 
-        public bool HasRole(string role)
+        public bool IsAuthenticated()
         {
-            var roles = GetCurrentUserRoles();
-            return roles.Contains(role, StringComparer.OrdinalIgnoreCase);
+            var httpContext = _httpContextAccessor.HttpContext;
+            return httpContext?.User?.Identity?.IsAuthenticated == true;
         }
     }
 }

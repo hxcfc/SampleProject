@@ -8,7 +8,7 @@ namespace SampleProject.Installers.InstallServices.Configuration
         /// <summary>
         /// Gets the installation order priority
         /// </summary>
-        public int Order => 2;
+        public int Order => 3;
         /// <summary>
         /// Installs AutoMapper services
         /// </summary>

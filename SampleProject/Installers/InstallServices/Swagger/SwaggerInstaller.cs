@@ -3,6 +3,18 @@ using System.Reflection;
 using Common.Options;
 using System.Linq;
 using SampleProject.Installers.Extensions;
+using System.Text;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.OpenApi.Any;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using Common.Shared;
 
 namespace SampleProject.Installers.InstallServices.Swagger
 {
@@ -40,30 +52,49 @@ namespace SampleProject.Installers.InstallServices.Swagger
                 {
                     app.Use(async (context, next) =>
                     {
-                        if (context.Request.Path.StartsWithSegments("/swagger"))
+                        try
                         {
-                            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-                            if (authHeader != null && authHeader.StartsWith("Basic "))
+                            if (context.Request.Path.StartsWithSegments("/swagger"))
                             {
-                                var encodedUsernamePassword = authHeader.Substring("Basic ".Length).Trim();
-                                var decodedUsernamePassword = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encodedUsernamePassword));
-                                var username = decodedUsernamePassword.Split(':')[0];
-                                var password = decodedUsernamePassword.Split(':')[1];
-
-                                if (username == swaggerOptions.Auth.Username && password == swaggerOptions.Auth.Password)
+                                var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                                if (authHeader != null && authHeader.StartsWith("Basic "))
                                 {
-                                    await next();
-                                    return;
+                                    var encodedUsernamePassword = authHeader.Substring("Basic ".Length).Trim();
+                                    var decodedUsernamePassword = Encoding.UTF8.GetString(Convert.FromBase64String(encodedUsernamePassword));
+                                    var credentials = decodedUsernamePassword.Split(':', 2);
+                                    
+                                    if (credentials.Length == 2)
+                                    {
+                                        var username = credentials[0];
+                                        var password = credentials[1];
+
+                                        if (username == swaggerOptions.Auth.Username && password == swaggerOptions.Auth.Password)
+                                        {
+                                            await next();
+                                            return;
+                                        }
+                                    }
                                 }
+
+                                context.Response.Headers["WWW-Authenticate"] = "Basic realm=\"Swagger UI\"";
+                                context.Response.StatusCode = 401;
+                                await context.Response.WriteAsync("Unauthorized", context.RequestAborted);
+                                return;
                             }
 
-                            context.Response.Headers["WWW-Authenticate"] = "Basic realm=\"Swagger UI\"";
-                            context.Response.StatusCode = 401;
-                            await context.Response.WriteAsync("Unauthorized");
-                            return;
+                            await next();
                         }
-
-                        await next();
+                        catch (OperationCanceledException)
+                        {
+                            // Request was canceled, this is normal behavior
+                            // Don't log this as an error
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "Error in Swagger authentication middleware");
+                            context.Response.StatusCode = 500;
+                            await context.Response.WriteAsync("Internal Server Error", context.RequestAborted);
+                        }
                     });
                 }
                 

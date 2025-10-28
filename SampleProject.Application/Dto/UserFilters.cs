@@ -1,6 +1,6 @@
 using SampleProject.Domain.Enums;
 
-namespace SampleProject.Domain.Dto
+namespace SampleProject.Application.Dto
 {
     /// <summary>
     /// Filters for user search and listing

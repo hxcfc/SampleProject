@@ -1,5 +1,6 @@
 using MediatR;
 using SampleProject.Application;
+using SampleProject.Application.Behaviors;
 using Common.Shared;
 
 namespace SampleProject.Installers.InstallServices.Configuration
@@ -29,6 +30,9 @@ namespace SampleProject.Installers.InstallServices.Configuration
                 cfg.RegisterServicesFromAssembly(programAssembly);
                 cfg.RegisterServicesFromAssembly(applicationAssembly);
             });
+
+            // Register ValidationBehavior for automatic FluentValidation
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
             Log.Information(StringMessages.MediatRServicesRegisteredSuccessfully);
         }

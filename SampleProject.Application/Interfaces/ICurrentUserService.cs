@@ -1,4 +1,3 @@
-using SampleProject.Domain.Dto;
 using SampleProject.Domain.Responses;
 
 namespace SampleProject.Application.Interfaces
@@ -15,28 +14,29 @@ namespace SampleProject.Application.Interfaces
         CurrentUserResponse? GetCurrentUser();
 
         /// <summary>
-        /// Gets the current user ID
-        /// </summary>
-        /// <returns>User ID or null if not authenticated</returns>
-        string? GetCurrentUserId();
-
-        /// <summary>
         /// Gets the current user email
         /// </summary>
         /// <returns>User email or null if not authenticated</returns>
         string? GetCurrentUserEmail();
 
         /// <summary>
-        /// Gets the current user roles
+        /// Gets the current user ID
         /// </summary>
-        /// <returns>List of user roles or empty list if not authenticated</returns>
-        List<string> GetCurrentUserRoles();
+        /// <returns>User ID or null if not authenticated</returns>
+        string? GetCurrentUserId();
 
         /// <summary>
-        /// Checks if the current user is authenticated
+        /// Gets the current user Role
         /// </summary>
-        /// <returns>True if user is authenticated, false otherwise</returns>
-        bool IsAuthenticated();
+        /// <returns>List of user Role or empty list if not authenticated</returns>
+        string? GetCurrentUserRole();
+
+        /// <summary>
+        /// Checks if the current user has specific role
+        /// </summary>
+        /// <param name="role">Role to check</param>
+        /// <returns>True if user has the role, false otherwise</returns>
+        bool HasRole(string role);
 
         /// <summary>
         /// Checks if the current user has admin role
@@ -45,10 +45,9 @@ namespace SampleProject.Application.Interfaces
         bool IsAdmin();
 
         /// <summary>
-        /// Checks if the current user has specific role
+        /// Checks if the current user is authenticated
         /// </summary>
-        /// <param name="role">Role to check</param>
-        /// <returns>True if user has the role, false otherwise</returns>
-        bool HasRole(string role);
+        /// <returns>True if user is authenticated, false otherwise</returns>
+        bool IsAuthenticated();
     }
 }

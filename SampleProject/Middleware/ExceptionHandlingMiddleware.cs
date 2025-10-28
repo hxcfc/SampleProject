@@ -16,10 +16,11 @@ namespace SampleProject.Middleware
         /// </summary>
         /// <param name="next">Next middleware in the pipeline</param>
         /// <param name="logger">Logger instance</param>
+        /// <exception cref="ArgumentNullException">Thrown when any parameter is null</exception>
         public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
         {
-            _next = next;
-            _logger = logger;
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -38,7 +39,7 @@ namespace SampleProject.Middleware
                 // Client disconnected or request was aborted (includes TaskCanceledException)
                 // This is normal behavior, don't log as error
                 _logger.LogDebug("Request was cancelled: {Path}", context.Request.Path);
-                
+
                 // Don't try to write response if client disconnected
                 // Just rethrow and let framework handle cleanup
                 throw;
@@ -53,7 +54,7 @@ namespace SampleProject.Middleware
                     context.Response.StatusCode = 404;
                     return;
                 }
-                
+
                 _logger.LogError(ex, StringMessages.UnhandledExceptionOccurred);
                 await HandleExceptionAsync(context, ex);
             }
@@ -116,18 +117,35 @@ namespace SampleProject.Middleware
                     break;
             }
 
-            context.Response.StatusCode = response.StatusCode;
-
-            var jsonResponse = JsonSerializer.Serialize(response, new JsonSerializerOptions
+            // Only modify response if it hasn't started yet and response body is empty
+            var canModifyResponse = !context.Response.HasStarted;
+            var isBodyEmpty = true;
+            
+            try
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = true
-            });
-
-            // Check if response stream is still available before writing
-            if (!context.Response.HasStarted && context.Response.Body.CanWrite)
+                isBodyEmpty = context.Response.Body.CanRead && context.Response.Body.Length == 0;
+            }
+            catch (ObjectDisposedException)
             {
-                await context.Response.WriteAsync(jsonResponse);
+                // If stream is disposed, consider it as not empty to avoid modification
+                isBodyEmpty = false;
+            }
+            
+            if (canModifyResponse && isBodyEmpty)
+            {
+                context.Response.StatusCode = response.StatusCode;
+
+                var jsonResponse = JsonSerializer.Serialize(response, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    WriteIndented = true
+                });
+
+                // Check if response stream is still available before writing
+                if (context.Response.Body.CanWrite)
+                {
+                    await context.Response.WriteAsync(jsonResponse);
+                }
             }
         }
     }

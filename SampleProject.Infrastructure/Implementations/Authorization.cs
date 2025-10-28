@@ -2,7 +2,7 @@
 using SampleProject.Application.Interfaces;
 using SampleProject.Application.Interfaces.SampleProject.Authorization;
 using SampleProject.Application.Interfaces.Persistence;
-using SampleProject.Domain.Dto;
+using SampleProject.Application.Dto;
 using SampleProject.Domain.Entities;
 using SampleProject.Domain.Enums;
 using Common.Shared;
@@ -143,8 +143,7 @@ namespace SampleProject.Infrastructure.Implementations
                 // Get user from database
                 var userRepository = _unitOfWork.Repository<UserEntity>();
                 var userEntity = await userRepository.GetFirstAsync(u =>
-                    u.Email.ToLower() == email.ToLower() &&
-                    u.IsActive);
+                    u.Email.ToLower() == email.ToLower());
 
                 if (userEntity == null)
                 {
@@ -176,7 +175,7 @@ namespace SampleProject.Infrastructure.Implementations
                     LastLoginAt = userEntity.LastLoginAt,
                     CreatedAt = userEntity.CreatedAt,
                     UpdatedAt = userEntity.UpdatedAt,
-                    Roles = userEntity.Roles // Use enum flags directly
+                    Role = userEntity.Role // Use enum flags directly
                 };
 
                 _logger.LogInformation(StringMessages.CredentialsValidatedSuccessfullyForEmail, email);
@@ -231,7 +230,7 @@ namespace SampleProject.Infrastructure.Implementations
                     LastLoginAt = userEntity.LastLoginAt,
                     CreatedAt = userEntity.CreatedAt,
                     UpdatedAt = userEntity.UpdatedAt,
-                    Roles = userEntity.Roles
+                    Role = userEntity.Role
                 };
 
                 _logger.LogInformation(StringMessages.RefreshTokenValidatedSuccessfully, userEntity.Id);

@@ -1,4 +1,4 @@
-namespace SampleProject.Domain.Dto
+namespace SampleProject.Application.Dto
 {
     /// <summary>
     /// Represents a paged result with data and pagination information

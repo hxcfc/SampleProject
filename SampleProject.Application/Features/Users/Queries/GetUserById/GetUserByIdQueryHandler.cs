@@ -2,7 +2,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using SampleProject.Application.Interfaces;
 using SampleProject.Domain.Common;
-using SampleProject.Domain.Dto;
+using SampleProject.Application.Dto;
 
 namespace SampleProject.Application.Features.Users.Queries.GetUserById
 {
@@ -26,6 +26,13 @@ namespace SampleProject.Application.Features.Users.Queries.GetUserById
         {
             try
             {
+                // Check if UserId is empty
+                if (request.UserId == Guid.Empty)
+                {
+                    _logger.LogWarning(StringMessages.InvalidUserIdProvided);
+                    return Result<UserDto>.Failure(StringMessages.InvalidUserId);
+                }
+
                 _logger.LogInformation(StringMessages.AttemptingToGetUserById, request.UserId);
 
                 // Use UserService to get user

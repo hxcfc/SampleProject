@@ -86,6 +86,7 @@ namespace SampleProject.Middleware
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred in JwtTokenMiddleware");
+                // Continue processing without rethrowing to allow the request to proceed
                 await _next(context);
             }
         }
@@ -114,7 +115,7 @@ namespace SampleProject.Middleware
                 var email = extendedJwtService.GetEmailFromToken(token);
                 var firstName = extendedJwtService.GetFirstNameFromToken(token);
                 var lastName = extendedJwtService.GetLastNameFromToken(token);
-                var roles = extendedJwtService.GetRolesFromToken(token);
+                var role = extendedJwtService.GetRoleFromToken(token);
 
                 // Add standard claims
                 if (!string.IsNullOrEmpty(userId))
@@ -147,7 +148,8 @@ namespace SampleProject.Middleware
                 }
 
                 // Add role claims
-                foreach (var role in roles)
+                if (!string.IsNullOrEmpty(role))
+
                 {
                     claims.Add(new Claim(ClaimTypes.Role, role));
                 }
@@ -179,6 +181,7 @@ namespace SampleProject.Middleware
             {
                 "/api/v1/auth/login" => true,
                 "/api/v1/auth/refresh" => true,
+                "/api/v1/users" => true, // User registration endpoint
                 "/health" => true,
                 "/health-ui" => true,
                 "/swagger" => true,

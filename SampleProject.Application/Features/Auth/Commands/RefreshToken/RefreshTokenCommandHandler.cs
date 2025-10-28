@@ -45,6 +45,13 @@ namespace SampleProject.Application.Features.Auth.Commands.RefreshToken
                     return Result<TokenResponse>.Failure(StringMessages.InvalidRefreshToken);
                 }
 
+                // Check if user is active
+                if (!user.IsActive)
+                {
+                    _logger.LogWarning("Account is not active for user: {UserId}", user.Id);
+                    return Result<TokenResponse>.Failure(StringMessages.AccountNotActive);
+                }
+
                 // Generate new JWT token
                 var tokenResponse = await _jwtService.GenerateTokenAsync(
                     user.Id.ToString(),
@@ -52,7 +59,7 @@ namespace SampleProject.Application.Features.Auth.Commands.RefreshToken
                     user.Email,
                     user.FirstName,
                     user.LastName,
-                    user.Roles);
+                    user.Role);
 
                 // Save new refresh token to database (replace old one)
                 var refreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // 7 days expiry

@@ -57,7 +57,7 @@ namespace SampleProject.Infrastructure.Implementations
 
             if (_options.EnableReferrerPolicy)
             {
-                response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+                response.Headers["Referrer-Policy"] = "no-referrer";
             }
         }
 

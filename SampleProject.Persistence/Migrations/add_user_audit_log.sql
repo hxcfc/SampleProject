@@ -65,7 +65,7 @@ BEGIN
                 'Email', NEW."Email",
                 'FirstName', NEW."FirstName",
                 'LastName', NEW."LastName",
-                'Roles', NEW."Roles",
+                'Role', NEW."Role",
                 'IsActive', NEW."IsActive",
                 'CreatedAt', NEW."CreatedAt"
             )::text, 
@@ -78,7 +78,7 @@ BEGIN
         IF (OLD."Email" IS DISTINCT FROM NEW."Email" OR
             OLD."FirstName" IS DISTINCT FROM NEW."FirstName" OR
             OLD."LastName" IS DISTINCT FROM NEW."LastName" OR
-            OLD."Roles" IS DISTINCT FROM NEW."Roles" OR
+            OLD."Role" IS DISTINCT FROM NEW."Role" OR
             OLD."IsActive" IS DISTINCT FROM NEW."IsActive" OR
             OLD."IsEmailVerified" IS DISTINCT FROM NEW."IsEmailVerified" OR
             OLD."RefreshToken" IS DISTINCT FROM NEW."RefreshToken") THEN
@@ -91,7 +91,7 @@ BEGIN
                     'Email', OLD."Email",
                     'FirstName', OLD."FirstName",
                     'LastName', OLD."LastName",
-                    'Roles', OLD."Roles",
+                    'Role', OLD."Role",
                     'IsActive', OLD."IsActive",
                     'IsEmailVerified', OLD."IsEmailVerified"
                 )::text,
@@ -99,7 +99,7 @@ BEGIN
                     'Email', NEW."Email",
                     'FirstName', NEW."FirstName",
                     'LastName', NEW."LastName",
-                    'Roles', NEW."Roles",
+                    'Role', NEW."Role",
                     'IsActive', NEW."IsActive",
                     'IsEmailVerified', NEW."IsEmailVerified"
                 )::text,

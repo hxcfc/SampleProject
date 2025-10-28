@@ -23,10 +23,11 @@ namespace SampleProject.Middleware
         /// </summary>
         /// <param name="next">Next middleware in the pipeline</param>
         /// <param name="logger">Logger instance</param>
+        /// <exception cref="ArgumentNullException">Thrown when any parameter is null</exception>
         public MetricsMiddleware(RequestDelegate next, ILogger<MetricsMiddleware> logger)
         {
-            _next = next;
-            _logger = logger;
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -43,6 +44,11 @@ namespace SampleProject.Middleware
             try
             {
                 await _next(context);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing request {Method} {Path}", method, path);
+                throw;
             }
             finally
             {

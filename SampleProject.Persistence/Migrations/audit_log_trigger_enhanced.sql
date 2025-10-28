@@ -21,7 +21,7 @@ BEGIN
             'Email', NEW."Email",
             'FirstName', NEW."FirstName",
             'LastName', NEW."LastName",
-            'Roles', NEW."Roles"::text,
+            'Role', NEW."Role"::text,
             'IsActive', NEW."IsActive",
             'IsEmailVerified', NEW."IsEmailVerified",
             'CreatedAt', NEW."CreatedAt",
@@ -54,8 +54,8 @@ BEGIN
             changed_fields := array_append(changed_fields, 'LastName');
         END IF;
         
-        IF OLD."Roles" IS DISTINCT FROM NEW."Roles" THEN
-            changed_fields := array_append(changed_fields, 'Roles');
+        IF OLD."Role" IS DISTINCT FROM NEW."Role" THEN
+            changed_fields := array_append(changed_fields, 'Role');
         END IF;
         
         IF OLD."IsActive" IS DISTINCT FROM NEW."IsActive" THEN
@@ -99,7 +99,7 @@ BEGIN
                     'Email', OLD."Email",
                     'FirstName', OLD."FirstName",
                     'LastName', OLD."LastName",
-                    'Roles', OLD."Roles"::text,
+                    'Role', OLD."Role"::text,
                     'IsActive', OLD."IsActive",
                     'IsEmailVerified', OLD."IsEmailVerified",
                     'LastLoginAt', OLD."LastLoginAt",
@@ -112,7 +112,7 @@ BEGIN
                     'Email', NEW."Email",
                     'FirstName', NEW."FirstName",
                     'LastName', NEW."LastName",
-                    'Roles', NEW."Roles"::text,
+                    'Role', NEW."Role"::text,
                     'IsActive', NEW."IsActive",
                     'IsEmailVerified', NEW."IsEmailVerified",
                     'LastLoginAt', NEW."LastLoginAt",
@@ -143,7 +143,7 @@ BEGIN
             'Email', OLD."Email",
             'FirstName', OLD."FirstName",
             'LastName', OLD."LastName",
-            'Roles', OLD."Roles"::text,
+            'Role', OLD."Role"::text,
             'IsActive', OLD."IsActive",
             'CreatedAt', OLD."CreatedAt",
             'LastLoginAt', OLD."LastLoginAt"
@@ -282,7 +282,7 @@ CREATE INDEX IF NOT EXISTS idx_user_audit_logs_action_created_at ON "UserAuditLo
 -- Uncomment these queries to test the enhanced audit logging:
 
 -- Test user creation audit
--- INSERT INTO "Users" ("Id", "Email", "FirstName", "LastName", "PasswordHash", "PasswordSalt", "Roles", "IsActive", "IsEmailVerified", "CreatedAt")
+-- INSERT INTO "Users" ("Id", "Email", "FirstName", "LastName", "PasswordHash", "PasswordSalt", "Role", "IsActive", "IsEmailVerified", "CreatedAt")
 -- VALUES (gen_random_uuid(), 'test@example.com', 'Test', 'User', 'hash', 'salt', 1, true, false, NOW());
 
 -- Test user update audit

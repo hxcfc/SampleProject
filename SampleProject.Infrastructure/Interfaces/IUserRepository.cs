@@ -1,5 +1,5 @@
 using SampleProject.Domain.Entities;
-using SampleProject.Domain.Dto;
+using SampleProject.Application.Dto;
 
 namespace SampleProject.Infrastructure.Interfaces
 {
@@ -28,6 +28,13 @@ namespace SampleProject.Infrastructure.Interfaces
         /// <param name="email">User's email address</param>
         /// <returns>User entity or null if not found</returns>
         Task<UserEntity?> GetByEmailAsync(string email);
+
+        /// <summary>
+        /// Checks if a user exists with the given email address
+        /// </summary>
+        /// <param name="email">User's email address</param>
+        /// <returns>True if a user exists with the email, false otherwise</returns>
+        Task<bool> ExistsByEmailAsync(string email);
 
         /// <summary>
         /// Updates an existing user

@@ -2,7 +2,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using SampleProject.Application.Interfaces;
 using SampleProject.Domain.Common;
-using SampleProject.Domain.Dto;
+using SampleProject.Application.Dto;
 using Common.Shared;
 
 namespace SampleProject.Application.Features.Users.Queries.GetUsersList

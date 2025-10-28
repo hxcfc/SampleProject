@@ -1,20 +1,13 @@
-using SampleProject.Application.Features.Users.Commands.CreateUser;
-using SampleProject.Application.Features.Users.Commands.UpdateUser;
 using SampleProject.Application.Features.Users.Commands.ChangePassword;
 using SampleProject.Application.Features.Users.Commands.ChangeUserRole;
-using SampleProject.Application.Features.Users.Queries.GetUserById;
+using SampleProject.Application.Features.Users.Commands.CreateUser;
+using SampleProject.Application.Features.Users.Commands.UpdateUser;
 using SampleProject.Application.Features.Users.Queries.CheckEmailAvailability;
+using SampleProject.Application.Features.Users.Queries.GetUserById;
 using SampleProject.Application.Features.Users.Queries.GetUsersList;
-using SampleProject.Domain.Common;
-using SampleProject.Domain.Dto;
+using SampleProject.Application.Dto;
 using SampleProject.Domain.Enums;
-using SampleProject.Domain.Responses;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Versioning;
 using Swashbuckle.AspNetCore.Annotations;
-using Microsoft.AspNetCore.Authorization;
-using SampleProject.Application.Interfaces;
 
 namespace SampleProject.Controllers.Users
 {
@@ -42,11 +35,165 @@ namespace SampleProject.Controllers.Users
         }
 
         /// <summary>
+        /// Changes current user's password
+        /// </summary>
+        /// <param name="command">Password change command</param>
+        /// <returns>Success status</returns>
+        [HttpPost("me/change-password")]
+        [Authorize(Roles = "User")]
+        [SwaggerOperation(
+            Summary = "Change my password",
+            Description = "Changes current user's password. Requires current password verification.",
+            OperationId = "ChangeMyPassword",
+            Tags = new[] { "Users" }
+        )]
+        [SwaggerResponse(200, "Password changed successfully", typeof(bool))]
+        [SwaggerResponse(401, "Unauthorized", typeof(ErrorResponseModel))]
+        [SwaggerResponse(404, "User not found", typeof(ErrorResponseModel))]
+        [SwaggerResponse(400, "Invalid input data", typeof(ErrorResponseModel))]
+        [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
+        public async Task<IActionResult> ChangeMyPassword([FromBody] ChangePasswordCommand command)
+        {
+            // Get current user ID from JWT token
+            var currentUserId = _currentUserService.GetCurrentUserId();
+
+            if (string.IsNullOrEmpty(currentUserId) || !Guid.TryParse(currentUserId, out var currentUserIdGuid))
+            {
+                return Unauthorized(new ErrorResponseModel
+                {
+                    Error = StringMessages.Unauthorized,
+                    ErrorDescription = StringMessages.InvalidToken
+                });
+            }
+
+            command.UserId = currentUserIdGuid;
+            var result = await Mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new ErrorResponseModel
+                {
+                    Error = StringMessages.ValidationError,
+                    ErrorDescription = result.Error ?? StringMessages.UnknownErrorOccurred
+                });
+            }
+
+            return Ok(result.Value);
+        }
+
+        /// <summary>
+        /// Changes user password (Admin only)
+        /// </summary>
+        /// <param name="userId">User ID to change password for</param>
+        /// <param name="command">Password change command</param>
+        /// <returns>Success status</returns>
+        [HttpPost("{userId}/change-password")]
+        [Authorize(Roles = "Admin")]
+        [SwaggerOperation(
+            Summary = "Change user password (Admin only)",
+            Description = "Changes any user's password. Admin can change any user's password without current password verification.",
+            OperationId = "ChangeUserPassword",
+            Tags = new[] { "Users" }
+        )]
+        [SwaggerResponse(200, "Password changed successfully", typeof(bool))]
+        [SwaggerResponse(401, "Unauthorized", typeof(ErrorResponseModel))]
+        [SwaggerResponse(403, "Forbidden - Admin role required", typeof(ErrorResponseModel))]
+        [SwaggerResponse(404, "User not found", typeof(ErrorResponseModel))]
+        [SwaggerResponse(400, "Invalid input data", typeof(ErrorResponseModel))]
+        [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
+        public async Task<IActionResult> ChangeUserPassword(Guid userId, [FromBody] ChangePasswordCommand command)
+        {
+            command.UserId = userId;
+            var result = await Mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new ErrorResponseModel
+                {
+                    Error = StringMessages.ValidationError,
+                    ErrorDescription = result.Error ?? StringMessages.UnknownErrorOccurred
+                });
+            }
+
+            return Ok(result.Value);
+        }
+
+        /// <summary>
+        /// Changes user role (Admin only)
+        /// </summary>
+        /// <param name="userId">User ID to change role for</param>
+        /// <param name="command">Role change command</param>
+        /// <returns>Updated user information</returns>
+        [HttpPost("{userId}/change-role")]
+        [Authorize(Roles = "Admin")]
+        [SwaggerOperation(
+            Summary = "Change user role (Admin only)",
+            Description = "Changes user role.",
+            OperationId = "ChangeUserRole",
+            Tags = new[] { "Users" }
+        )]
+        [SwaggerResponse(200, "User role changed successfully", typeof(UserDto))]
+        [SwaggerResponse(401, "Unauthorized", typeof(ErrorResponseModel))]
+        [SwaggerResponse(403, "Forbidden - Admin role required", typeof(ErrorResponseModel))]
+        [SwaggerResponse(404, "User not found", typeof(ErrorResponseModel))]
+        [SwaggerResponse(400, "Invalid input data", typeof(ErrorResponseModel))]
+        [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
+        public async Task<IActionResult> ChangeUserRole(Guid userId, [FromBody] ChangeUserRoleCommand command)
+        {
+            command.UserId = userId;
+            var result = await Mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new ErrorResponseModel
+                {
+                    Error = StringMessages.ValidationError,
+                    ErrorDescription = result.Error ?? StringMessages.UnknownErrorOccurred
+                });
+            }
+
+            return Ok(result.Value);
+        }
+
+        /// <summary>
+        /// Checks if email is available for registration
+        /// </summary>
+        /// <param name="email">Email address to check</param>
+        /// <returns>True if email is available, false if already taken</returns>
+        [HttpGet("check-email/{email}")]
+        [SwaggerOperation(
+            Summary = "Check email availability",
+            Description = "Checks if the provided email address is available for registration.",
+            OperationId = "CheckEmailAvailability",
+            Tags = new[] { "Users" }
+        )]
+        [SwaggerResponse(200, "Email availability checked successfully", typeof(bool))]
+        [SwaggerResponse(400, "Invalid email format", typeof(ErrorResponseModel))]
+        [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
+        public async Task<IActionResult> CheckEmailAvailability(string email)
+        {
+            var query = new CheckEmailAvailabilityQuery(email);
+            var result = await Mediator.Send(query);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(new ErrorResponseModel
+                {
+                    Error = StringMessages.ValidationError,
+                    ErrorDescription = result.Error ?? StringMessages.UnknownErrorOccurred
+                });
+            }
+
+            return Ok(result.Value);
+        }
+
+        /// <summary>
         /// Registers a new user
         /// </summary>
         /// <param name="command">User registration command</param>
         /// <returns>Created user information</returns>
         [HttpPost]
+        [AllowAnonymous]
         [SwaggerOperation(
             Summary = "Register a new user",
             Description = "Registers a new user with email, password, and personal information. User will be inactive until email verification (future feature).",
@@ -94,7 +241,7 @@ namespace SampleProject.Controllers.Users
         {
             // Check if user is trying to access their own data or is admin
             var currentUserId = _currentUserService.GetCurrentUserId();
-            var currentUserRoles = _currentUserService.GetCurrentUserRoles();
+            var currentUserRole = _currentUserService.GetCurrentUserRole();
 
             if (string.IsNullOrEmpty(currentUserId) || !Guid.TryParse(currentUserId, out var currentUserIdGuid))
             {
@@ -106,7 +253,7 @@ namespace SampleProject.Controllers.Users
             }
 
             // Check if user is trying to access their own data or is admin
-            if (currentUserIdGuid != userId && !currentUserRoles.Contains("Admin"))
+            if (currentUserIdGuid != userId && !currentUserRole.Contains("Admin"))
             {
                 return Forbid();
             }
@@ -120,38 +267,6 @@ namespace SampleProject.Controllers.Users
                 {
                     Error = StringMessages.NotFound,
                     ErrorDescription = result.Error ?? StringMessages.UserNotFound
-                });
-            }
-
-            return Ok(result.Value);
-        }
-
-        /// <summary>
-        /// Checks if email is available for registration
-        /// </summary>
-        /// <param name="email">Email address to check</param>
-        /// <returns>True if email is available, false if already taken</returns>
-        [HttpGet("check-email/{email}")]
-        [SwaggerOperation(
-            Summary = "Check email availability",
-            Description = "Checks if the provided email address is available for registration.",
-            OperationId = "CheckEmailAvailability",
-            Tags = new[] { "Users" }
-        )]
-        [SwaggerResponse(200, "Email availability checked successfully", typeof(bool))]
-        [SwaggerResponse(400, "Invalid email format", typeof(ErrorResponseModel))]
-        [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
-        public async Task<IActionResult> CheckEmailAvailability(string email)
-        {
-            var query = new CheckEmailAvailabilityQuery(email);
-            var result = await Mediator.Send(query);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new ErrorResponseModel
-                {
-                    Error = StringMessages.ValidationError,
-                    ErrorDescription = result.Error ?? StringMessages.UnknownErrorOccurred
                 });
             }
 
@@ -298,127 +413,6 @@ namespace SampleProject.Controllers.Users
         [SwaggerResponse(400, "Invalid input data", typeof(ErrorResponseModel))]
         [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
         public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserCommand command)
-        {
-            command.UserId = userId;
-            var result = await Mediator.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new ErrorResponseModel
-                {
-                    Error = StringMessages.ValidationError,
-                    ErrorDescription = result.Error ?? StringMessages.UnknownErrorOccurred
-                });
-            }
-
-            return Ok(result.Value);
-        }
-
-        /// <summary>
-        /// Changes current user's password
-        /// </summary>
-        /// <param name="command">Password change command</param>
-        /// <returns>Success status</returns>
-        [HttpPost("me/change-password")]
-        [Authorize(Roles = "User")]
-        [SwaggerOperation(
-            Summary = "Change my password",
-            Description = "Changes current user's password. Requires current password verification.",
-            OperationId = "ChangeMyPassword",
-            Tags = new[] { "Users" }
-        )]
-        [SwaggerResponse(200, "Password changed successfully", typeof(bool))]
-        [SwaggerResponse(401, "Unauthorized", typeof(ErrorResponseModel))]
-        [SwaggerResponse(404, "User not found", typeof(ErrorResponseModel))]
-        [SwaggerResponse(400, "Invalid input data", typeof(ErrorResponseModel))]
-        [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
-        public async Task<IActionResult> ChangeMyPassword([FromBody] ChangePasswordCommand command)
-        {
-            // Get current user ID from JWT token
-            var currentUserId = _currentUserService.GetCurrentUserId();
-
-            if (string.IsNullOrEmpty(currentUserId) || !Guid.TryParse(currentUserId, out var currentUserIdGuid))
-            {
-                return Unauthorized(new ErrorResponseModel
-                {
-                    Error = StringMessages.Unauthorized,
-                    ErrorDescription = StringMessages.InvalidToken
-                });
-            }
-
-            command.UserId = currentUserIdGuid;
-            var result = await Mediator.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new ErrorResponseModel
-                {
-                    Error = StringMessages.ValidationError,
-                    ErrorDescription = result.Error ?? StringMessages.UnknownErrorOccurred
-                });
-            }
-
-            return Ok(result.Value);
-        }
-
-        /// <summary>
-        /// Changes user password (Admin only)
-        /// </summary>
-        /// <param name="userId">User ID to change password for</param>
-        /// <param name="command">Password change command</param>
-        /// <returns>Success status</returns>
-        [HttpPost("{userId}/change-password")]
-        [Authorize(Roles = "Admin")]
-        [SwaggerOperation(
-            Summary = "Change user password (Admin only)",
-            Description = "Changes any user's password. Admin can change any user's password without current password verification.",
-            OperationId = "ChangeUserPassword",
-            Tags = new[] { "Users" }
-        )]
-        [SwaggerResponse(200, "Password changed successfully", typeof(bool))]
-        [SwaggerResponse(401, "Unauthorized", typeof(ErrorResponseModel))]
-        [SwaggerResponse(403, "Forbidden - Admin role required", typeof(ErrorResponseModel))]
-        [SwaggerResponse(404, "User not found", typeof(ErrorResponseModel))]
-        [SwaggerResponse(400, "Invalid input data", typeof(ErrorResponseModel))]
-        [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
-        public async Task<IActionResult> ChangeUserPassword(Guid userId, [FromBody] ChangePasswordCommand command)
-        {
-            command.UserId = userId;
-            var result = await Mediator.Send(command);
-
-            if (!result.IsSuccess)
-            {
-                return BadRequest(new ErrorResponseModel
-                {
-                    Error = StringMessages.ValidationError,
-                    ErrorDescription = result.Error ?? StringMessages.UnknownErrorOccurred
-                });
-            }
-
-            return Ok(result.Value);
-        }
-
-        /// <summary>
-        /// Changes user role (Admin only)
-        /// </summary>
-        /// <param name="userId">User ID to change role for</param>
-        /// <param name="command">Role change command</param>
-        /// <returns>Updated user information</returns>
-        [HttpPost("{userId}/change-role")]
-        [Authorize(Roles = "Admin")]
-        [SwaggerOperation(
-            Summary = "Change user role (Admin only)",
-            Description = "Changes user role.",
-            OperationId = "ChangeUserRole",
-            Tags = new[] { "Users" }
-        )]
-        [SwaggerResponse(200, "User role changed successfully", typeof(UserDto))]
-        [SwaggerResponse(401, "Unauthorized", typeof(ErrorResponseModel))]
-        [SwaggerResponse(403, "Forbidden - Admin role required", typeof(ErrorResponseModel))]
-        [SwaggerResponse(404, "User not found", typeof(ErrorResponseModel))]
-        [SwaggerResponse(400, "Invalid input data", typeof(ErrorResponseModel))]
-        [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
-        public async Task<IActionResult> ChangeUserRole(Guid userId, [FromBody] ChangeUserRoleCommand command)
         {
             command.UserId = userId;
             var result = await Mediator.Send(command);

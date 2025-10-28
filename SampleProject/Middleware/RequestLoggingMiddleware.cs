@@ -17,10 +17,11 @@ namespace SampleProject.Middleware
         /// </summary>
         /// <param name="next">Next middleware in the pipeline</param>
         /// <param name="logger">Logger instance</param>
+        /// <exception cref="ArgumentNullException">Thrown when any parameter is null</exception>
         public RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
         {
-            _next = next;
-            _logger = logger;
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -34,12 +35,27 @@ namespace SampleProject.Middleware
             var requestId = Guid.NewGuid().ToString("N")[..8];
 
             // Log incoming request
-            LogIncomingRequest(context, requestId);
+            await LogIncomingRequest(context, requestId);
 
             // Enable response body reading
             var originalResponseBodyStream = context.Response.Body;
             using var responseBodyStream = new MemoryStream();
             context.Response.Body = responseBodyStream;
+
+            // Preload any existing response content (e.g., set by previous middleware)
+            try
+            {
+                if (originalResponseBodyStream.CanSeek && originalResponseBodyStream.Length > 0)
+                {
+                    originalResponseBodyStream.Seek(0, SeekOrigin.Begin);
+                    await originalResponseBodyStream.CopyToAsync(responseBodyStream);
+                    responseBodyStream.Seek(0, SeekOrigin.Begin);
+                }
+            }
+            catch (Exception preloadEx) when (preloadEx is not OperationCanceledException && preloadEx is not TaskCanceledException)
+            {
+                _logger.LogDebug(preloadEx, "Failed to preload existing response body for request {RequestId}", requestId);
+            }
 
             try
             {
@@ -49,6 +65,11 @@ namespace SampleProject.Middleware
             {
                 // Client disconnected (includes TaskCanceledException) - don't log, just rethrow
                 _logger.LogDebug("Request {RequestId} cancelled", requestId);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled exception processing request {RequestId}", requestId);
                 throw;
             }
             finally
@@ -87,6 +108,11 @@ namespace SampleProject.Middleware
                         // Stream already disposed, ignore
                         _logger.LogDebug("Response stream already disposed for request {RequestId}", requestId);
                     }
+                    catch (NotSupportedException nse)
+                    {
+                        // Destination stream not expandable (e.g., fixed-size MemoryStream in tests)
+                        _logger.LogDebug(nse, "Original response stream not expandable for request {RequestId}", requestId);
+                    }
                 }
             }
         }
@@ -96,7 +122,7 @@ namespace SampleProject.Middleware
         /// </summary>
         /// <param name="context">HTTP context</param>
         /// <param name="requestId">Request ID</param>
-        private void LogIncomingRequest(HttpContext context, string requestId)
+        private async Task LogIncomingRequest(HttpContext context, string requestId)
         {
             var request = context.Request;
             var method = request.Method;
@@ -105,7 +131,7 @@ namespace SampleProject.Middleware
             var userAgent = request.Headers.UserAgent.ToString();
             var clientIp = GetClientIpAddress(context);
 
-            _logger.LogDebug(
+            _logger.LogInformation(
                 "Request {RequestId}: {Method} {Path}{QueryString} from {ClientIp} - UserAgent: {UserAgent}",
                 requestId, method, path, queryString, clientIp, userAgent);
 
@@ -119,24 +145,21 @@ namespace SampleProject.Middleware
             // Log request body for POST/PUT/PATCH requests
             if (ShouldLogRequestBody(request.Method))
             {
-                _ = Task.Run(async () =>
+                try
                 {
-                    try
-                    {
-                        request.EnableBuffering();
-                        var body = await new StreamReader(request.Body, Encoding.UTF8).ReadToEndAsync();
-                        request.Body.Position = 0;
+                    request.EnableBuffering();
+                    var body = await new StreamReader(request.Body, Encoding.UTF8).ReadToEndAsync();
+                    request.Body.Position = 0;
 
-                        if (!string.IsNullOrEmpty(body))
-                        {
-                            _logger.LogDebug("Request {RequestId} Body: {Body}", requestId, body);
-                        }
-                    }
-                    catch (Exception ex)
+                    if (!string.IsNullOrEmpty(body))
                     {
-                        _logger.LogWarning(ex, "Failed to read request body for request {RequestId}", requestId);
+                        _logger.LogInformation("Request {RequestId} Body: {Body}", requestId, body);
                     }
-                });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to read request body for request {RequestId}", requestId);
+                }
             }
         }
 
@@ -153,7 +176,7 @@ namespace SampleProject.Middleware
             var statusCode = response.StatusCode;
             var contentLength = response.ContentLength ?? 0;
 
-            _logger.LogDebug(
+            _logger.LogInformation(
                 "Response {RequestId}: {StatusCode} in {ElapsedMs}ms - ContentLength: {ContentLength}",
                 requestId, statusCode, elapsedMilliseconds, contentLength);
 
@@ -179,7 +202,7 @@ namespace SampleProject.Middleware
                     !path.Contains("_framework") &&
                     !path.Contains("_vs"))
                 {
-                    _logger.LogWarning("Response {RequestId} Error Body: {Body}", requestId, responseBody);
+                    _logger.LogInformation("Response {RequestId} Error Body: {Body}", requestId, responseBody);
                 }
             }
         }

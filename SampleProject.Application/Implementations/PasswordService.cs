@@ -20,10 +20,7 @@ namespace SampleProject.Application.Implementations
         /// <returns>Tuple containing hashed password and salt</returns>
         public (string Hash, string Salt) HashPassword(string password)
         {
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                throw new ArgumentException("Password cannot be null or empty", nameof(password));
-            }
+            ValidatePassword(password);
 
             // Generate random salt
             using var rng = RandomNumberGenerator.Create();
@@ -50,10 +47,7 @@ namespace SampleProject.Application.Implementations
         /// <returns>True if password matches, false otherwise</returns>
         public bool VerifyPassword(string password, string hash, string salt)
         {
-            if (string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(hash) || string.IsNullOrWhiteSpace(salt))
-            {
-                return false;
-            }
+            ValidatePasswordParameters(password, hash, salt);
 
             try
             {
@@ -72,6 +66,46 @@ namespace SampleProject.Application.Implementations
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Validates password parameter
+        /// </summary>
+        /// <param name="password">Plain text password</param>
+        private static void ValidatePassword(string password)
+        {
+            if (password is null)
+                throw new ArgumentNullException(nameof(password));
+            
+            if (string.IsNullOrWhiteSpace(password))
+                throw new ArgumentException("Password cannot be null or empty", nameof(password));
+        }
+
+        /// <summary>
+        /// Validates password verification parameters
+        /// </summary>
+        /// <param name="password">Plain text password</param>
+        /// <param name="hash">Hashed password</param>
+        /// <param name="salt">Salt used for hashing</param>
+        private static void ValidatePasswordParameters(string password, string hash, string salt)
+        {
+            if (password is null)
+                throw new ArgumentNullException(nameof(password));
+            
+            if (hash is null)
+                throw new ArgumentNullException(nameof(hash));
+            
+            if (salt is null)
+                throw new ArgumentNullException(nameof(salt));
+            
+            if (string.IsNullOrWhiteSpace(password))
+                throw new ArgumentException("Password cannot be null or empty", nameof(password));
+            
+            if (string.IsNullOrWhiteSpace(hash))
+                throw new ArgumentException("Hash cannot be null or empty", nameof(hash));
+            
+            if (string.IsNullOrWhiteSpace(salt))
+                throw new ArgumentException("Salt cannot be null or empty", nameof(salt));
         }
     }
 }

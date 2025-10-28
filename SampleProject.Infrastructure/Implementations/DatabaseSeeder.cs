@@ -88,7 +88,7 @@ namespace SampleProject.Infrastructure.Implementations
                             PasswordSalt = passwordSalt,
                             IsActive = true,
                             IsEmailVerified = true,
-                            Roles = userRole,
+                            Role = userRole,
                             CreatedAt = DateTime.UtcNow
                         };
 
@@ -115,11 +115,11 @@ namespace SampleProject.Infrastructure.Implementations
         /// <summary>
         /// Parses role string to UserRole enum
         /// </summary>
-        /// <param name="roleString">Role as string</param>
+        /// <param name="Roletring">Role as string</param>
         /// <returns>UserRole enum value</returns>
-        private static UserRole ParseRoleFromString(string roleString)
+        private static UserRole ParseRoleFromString(string Roletring)
         {
-            return roleString?.ToLowerInvariant() switch
+            return Roletring?.ToLowerInvariant() switch
             {
                 "admin" => UserRole.Admin,
                 "user" => UserRole.User,

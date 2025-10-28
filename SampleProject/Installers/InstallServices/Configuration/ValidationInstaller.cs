@@ -10,7 +10,7 @@ namespace SampleProject.Installers.InstallServices.Configuration
         /// <summary>
         /// Gets the installation order priority
         /// </summary>
-        public int Order => 3;
+        public int Order => 5;
         /// <summary>
         /// Installs FluentValidation services
         /// </summary>
@@ -18,8 +18,9 @@ namespace SampleProject.Installers.InstallServices.Configuration
         /// <param name="configuration">Configuration</param>
         public void InstallServices(IServiceCollection services, IConfiguration configuration)
         {
-            // Register FluentValidation
+            // Register FluentValidation from both Program and Application assemblies
             services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+            services.AddValidatorsFromAssembly(typeof(SampleProject.Application.ServiceApplicationInstaller).Assembly);
 
             Log.Information(StringMessages.FluentValidationServicesRegisteredSuccessfully);
         }

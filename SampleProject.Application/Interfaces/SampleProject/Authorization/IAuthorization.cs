@@ -1,4 +1,4 @@
-﻿using SampleProject.Domain.Dto;
+﻿using SampleProject.Application.Dto;
 
 namespace SampleProject.Application.Interfaces.SampleProject.Authorization
 {

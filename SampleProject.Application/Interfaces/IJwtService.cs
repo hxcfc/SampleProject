@@ -16,9 +16,9 @@ namespace SampleProject.Application.Interfaces
         /// <param name="email">User email</param>
         /// <param name="firstName">User first name</param>
         /// <param name="lastName">User last name</param>
-        /// <param name="roles">User roles as enum flags</param>
+        /// <param name="Role">User Role as enum flags</param>
         /// <returns>Token response</returns>
-        Task<TokenResponse> GenerateTokenAsync(string userId, string username, string email, string firstName, string lastName, UserRole roles);
+        Task<TokenResponse> GenerateTokenAsync(string userId, string username, string email, string firstName, string lastName, UserRole Role);
 
         /// <summary>
         /// Generates a refresh token
@@ -48,11 +48,11 @@ namespace SampleProject.Application.Interfaces
         string? GetUsernameFromToken(string token);
 
         /// <summary>
-        /// Gets roles from JWT token
+        /// Gets Role from JWT token
         /// </summary>
         /// <param name="token">JWT token</param>
-        /// <returns>List of roles or empty list if invalid</returns>
-        IEnumerable<string> GetRolesFromToken(string token);
+        /// <returns>Role name or null if invalid</returns>
+        string? GetRoleFromToken(string token);
 
         /// <summary>
         /// Gets email from JWT token

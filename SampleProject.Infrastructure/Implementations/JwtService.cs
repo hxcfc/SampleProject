@@ -40,9 +40,9 @@ namespace SampleProject.Infrastructure.Implementations
         /// <param name="email">User email</param>
         /// <param name="firstName">User first name</param>
         /// <param name="lastName">User last name</param>
-        /// <param name="roles">User roles as enum flags</param>
+        /// <param name="Role">User Role as enum flags</param>
         /// <returns>Token response</returns>
-        public async Task<TokenResponse> GenerateTokenAsync(string userId, string username, string email, string firstName, string lastName, UserRole roles)
+        public async Task<TokenResponse> GenerateTokenAsync(string userId, string username, string email, string firstName, string lastName, UserRole Role)
         {
             var claims = new List<Claim>
             {
@@ -59,11 +59,11 @@ namespace SampleProject.Infrastructure.Implementations
                 new(JwtRegisteredClaimNames.Iat, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
             };
 
-            // Add role claims from enum flags
-            var roleNames = roles.GetRoleNames();
-            foreach (var role in roleNames)
+            // Add role claim - only the specific role, not all possible roles
+            var roleName = Role.GetName();
+            if (!string.IsNullOrEmpty(roleName) && roleName != "None")
             {
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                claims.Add(new Claim(ClaimTypes.Role, roleName));
             }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
@@ -83,7 +83,7 @@ namespace SampleProject.Infrastructure.Implementations
             var refreshToken = GenerateRefreshToken();
 
             Log.Information(StringMessages.JwtTokenGeneratedForUser, 
-                username, string.Join(", ", roleNames));
+                username, roleName);
 
             return await Task.FromResult(new TokenResponse
             {
@@ -149,7 +149,10 @@ namespace SampleProject.Infrastructure.Implementations
             try
             {
                 var jwtToken = _tokenHandler.ReadJwtToken(token);
-                return jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
+                return jwtToken.Claims.FirstOrDefault(x => 
+                    x.Type == ClaimTypes.NameIdentifier || 
+                    x.Type == JwtRegisteredClaimNames.Sub ||
+                    x.Type == "nameid")?.Value;
             }
             catch (Exception ex)
             {
@@ -168,7 +171,10 @@ namespace SampleProject.Infrastructure.Implementations
             try
             {
                 var jwtToken = _tokenHandler.ReadJwtToken(token);
-                return jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
+                return jwtToken.Claims.FirstOrDefault(x => 
+                    x.Type == ClaimTypes.Name || 
+                    x.Type == JwtRegisteredClaimNames.UniqueName ||
+                    x.Type == "unique_name")?.Value;
             }
             catch (Exception ex)
             {
@@ -178,24 +184,22 @@ namespace SampleProject.Infrastructure.Implementations
         }
 
         /// <summary>
-        /// Gets roles from JWT token
+        /// Gets Role from JWT token
         /// </summary>
         /// <param name="token">JWT token</param>
-        /// <returns>List of roles or empty list if invalid</returns>
-        public IEnumerable<string> GetRolesFromToken(string token)
+        /// <returns>Role name or null if invalid</returns>
+        public string? GetRoleFromToken(string token)
         {
             try
             {
                 var jwtToken = _tokenHandler.ReadJwtToken(token);
                 return jwtToken.Claims
-                    .Where(x => x.Type == ClaimTypes.Role)
-                    .Select(x => x.Value)
-                    .ToList();
+                    .FirstOrDefault(x => x.Type == ClaimTypes.Role || x.Type == "role")?.Value;
             }
             catch (Exception ex)
             {
-                Log.Warning(ex, StringMessages.FailedToGetRolesFromToken);
-                return new List<string>();
+                Log.Warning(ex, StringMessages.FailedToGetRoleFromToken);
+                return null;
             }
         }
 

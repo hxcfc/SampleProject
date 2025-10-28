@@ -131,9 +131,6 @@ namespace SampleProject
         /// <param name="app">Web application</param>
         private static void ConfigureMiddlewarePipeline(WebApplication app)
         {
-            // Exception handling must be first to catch all exceptions
-            app.UseExceptionHandling();
-            
             // CORS must be before other middleware
             app.UseCors();
             
@@ -158,7 +155,7 @@ namespace SampleProject
             // Rate limiting before auth
             app.UseRateLimiting();
 
-            // Routing
+            // Routing must be before authentication
             app.UseRouting();
             
             // JWT Token middleware - extract token from cookies/header and set HttpContext.User
@@ -175,15 +172,18 @@ namespace SampleProject
         /// <param name="app">Web application</param>
         private static void ConfigureApplicationServices(WebApplication app)
         {
-            // Configure services in assembly
+            // Map controllers first
+            app.MapControllers();
+
+            // Configure services in assembly (includes Swagger)
             app.ConfigureServicesInAssembly();
+            
+            // Exception handling must be last to catch all exceptions from downstream middleware
+            app.UseExceptionHandling();
 
             // Database seeding is handled by DatabaseSeedHostedService
 
             // Static files disabled - not using wwwroot
-
-            // Map controllers
-            app.MapControllers();
         }
 
 

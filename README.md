@@ -22,7 +22,8 @@
 - ✅ Rate limiting with configurable limits
 - ✅ Advanced monitoring and metrics collection
 - ✅ Correlation ID tracking for requests
-- ✅ Audit logging for user changes
+- ✅ Comprehensive audit logging for user changes
+- ✅ Token history tracking and usage monitoring
 - ✅ Request/response logging middleware
 - ✅ Global exception handling
 - ✅ Health checks with UI dashboard
@@ -284,18 +285,42 @@ GET    /metrics                     - Prometheus metrics endpoint
 ```json
 {
   "Swagger": {
+    "Title": "SampleProject.API",
+    "Version": "v1",
+    "Description": "A comprehensive .NET 9 example showcasing modern development practices with Clean Architecture, JWT authentication, Health Checks, and more. Demo users: admin@example.com/admin123, user@example.com/user123",
+    "ContactName": "Przemek Laskawiec",
+    "ContactEmail": "przemek.laskawiec@gmail.com",
+    "ContactUrl": "https://github.com/hxcfc",
+    "LicenseName": "MIT",
+    "LicenseUrl": "https://opensource.org/licenses/MIT",
+    "TermsOfServiceUrl": "https://github.com/hxcfc",
+    "EnableXmlComments": true,
+    "EnableAuthentication": true,
+    "EnableDeepLinking": true,
+    "EnableFilter": true,
+    "ShowRequestDuration": true,
     "Enabled": true,
+    "Servers": [
+      {
+        "Url": "http://localhost:15553",
+        "Description": "Development Server"
+      },
+      {
+        "Url": "https://localhost:7155",
+        "Description": "Development Server (HTTPS)"
+      }
+    ],
     "DemoCredentials": {
       "Enabled": true,
       "Users": [
         {
           "Username": "admin@example.com",
-          "Password": "admin",
+          "Password": "admin123",
           "Role": "Admin"
         },
         {
           "Username": "user@example.com",
-          "Password": "user",
+          "Password": "user123",
           "Role": "User"
         }
       ]
@@ -318,6 +343,77 @@ GET    /metrics                     - Prometheus metrics endpoint
     "UIEndpointPath": "/health-ui",
     "EnableDatabaseHealthCheck": true,
     "EnableMemoryHealthCheck": true
+  }
+}
+```
+
+### Security Headers Configuration
+```json
+{
+  "SecurityHeaders": {
+    "EnableXContentTypeOptions": true,
+    "EnableXFrameOptions": true,
+    "EnableXSSProtection": true,
+    "EnableContentSecurityPolicy": true,
+    "EnableReferrerPolicy": true,
+    "EnablePermissionsPolicy": true,
+    "EnableStrictTransportSecurity": true
+  }
+}
+```
+
+### CORS Configuration
+```json
+{
+  "Cors": {
+    "AllowedOrigins": [
+      "https://yourdomain.com",
+      "https://www.yourdomain.com"
+    ]
+  }
+}
+```
+
+### Monitoring Configuration
+```json
+{
+  "Monitoring": {
+    "Enabled": true,
+    "EnableBusinessMetrics": true,
+    "EnablePerformanceMetrics": true,
+    "EnableCustomMetrics": true,
+    "CollectionIntervalSeconds": 30,
+    "EnableCorrelationId": true,
+    "CorrelationIdHeaderName": "X-Correlation-ID",
+    "EnableBodyLogging": false,
+    "EnableDatabaseMonitoring": true,
+    "EnableMemoryMonitoring": true,
+    "EnableCpuMonitoring": true,
+    "EnableBusinessEventTracking": true,
+    "MetricsRetentionDays": 30
+  }
+}
+```
+
+### Serilog Configuration
+```json
+{
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "Microsoft.AspNetCore": "Warning",
+        "Microsoft.EntityFrameworkCore": "Warning",
+        "System": "Warning"
+      }
+    },
+    "EnableConsoleLogging": true,
+    "EnableFileLogging": true,
+    "MaxFileSizeMB": 10,
+    "MaxFilesToKeep": 30,
+    "LogFilePath": "Logs/application-.log",
+    "DetailedLogFilePath": "Logs/detailed-.log"
   }
 }
 ```
@@ -685,7 +781,12 @@ cd SampleProject
 
 3. **Run database migrations**
 ```bash
+# EF Core migrations
 dotnet ef database update --project SampleProject.Persistence
+
+# Custom SQL scripts for audit logging
+psql -U your_username -d your_database -f SampleProject.Persistence/Migrations/add_user_audit_log.sql
+psql -U your_username -d your_database -f SampleProject.Persistence/Migrations/audit_log_trigger_enhanced.sql
 ```
 
 4. **Run the application (local)**
@@ -717,7 +818,12 @@ docker compose up -d --build
 - [Architecture Analysis](ARCHITECTURE_ANALYSIS.md) - Detailed architecture overview
 - [JWT Cookies Implementation](JWT_COOKIES_IMPLEMENTATION.md) - JWT authentication details
 - [Audit Log and Token History](AUDIT_LOG_AND_TOKEN_HISTORY.md) - Audit logging implementation
-- [Database Migrations](SampleProject.Persistence/Migrations/README.md) - Database migration guide
+- [Database Migrations](DATABASE_MIGRATIONS.md) - Database migration guide
+
+### Demo Credentials
+- **Admin**: `admin@example.com` / `admin123`
+- **User**: `user@example.com` / `user123`
+- **Swagger Auth**: `swagger` / `swagger123`
 
 ---
 
@@ -728,13 +834,14 @@ docker compose up -d --build
 - ✅ SameSite=Strict (prevents CSRF)
 - ✅ Refresh tokens stored in database
 - ✅ Automatic refresh token revocation on logout
-- ✅ Password hashing with salt (PBKDF2)
+- ✅ Password hashing with salt (BCrypt)
 - ✅ Rate limiting with configurable limits
 - ✅ Correlation ID tracking for security monitoring
 - ✅ Global exception handling
 - ✅ Request/response logging
-- ✅ Security headers middleware
-- ✅ Audit logging for user changes
+- ✅ Security headers middleware (XSS, CSRF, clickjacking protection)
+- ✅ Comprehensive audit logging for user changes
+- ✅ Token history tracking and usage monitoring
 - ✅ CORS configuration
 - ✅ Advanced monitoring and metrics
 

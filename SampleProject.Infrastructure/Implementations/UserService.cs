@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using SampleProject.Application.Interfaces;
 using SampleProject.Domain.Common;
-using SampleProject.Domain.Dto;
+using SampleProject.Application.Dto;
 using SampleProject.Domain.Entities;
 using SampleProject.Domain.Enums;
 using SampleProject.Infrastructure.Interfaces;
@@ -53,7 +53,7 @@ namespace SampleProject.Infrastructure.Implementations
                     LastName = lastName,
                     PasswordHash = passwordHash,
                     PasswordSalt = passwordSalt,
-                    Roles = UserRole.User, // Default role for new users
+                    Role = UserRole.User, // Default role for new users
                     IsActive = false, // User needs to be activated via email (future feature)
                     IsEmailVerified = false, // Email verification required
                     CreatedAt = DateTime.UtcNow
@@ -301,7 +301,7 @@ namespace SampleProject.Infrastructure.Implementations
                     return Result<UserDto>.Failure(StringMessages.UserNotFoundForId);
                 }
 
-                userEntity.Roles = newRole;
+                userEntity.Role = newRole;
                 userEntity.UpdatedAt = DateTime.UtcNow;
 
                 var updatedUser = await _userRepository.UpdateUserAsync(userEntity);

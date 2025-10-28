@@ -175,23 +175,23 @@ namespace SampleProject.Middleware
             var ipCount = GetRequestCount(clientIp, windowStart);
             var endpointCount = GetRequestCount($"{clientIp}:{endpoint}", windowStart);
 
-            // Add headers
-            context.Response.Headers.Add(StringMessages.XRateLimitLimitGlobalHeader, _options.GlobalRateLimit.ToString());
-            context.Response.Headers.Add(StringMessages.XRateLimitRemainingGlobalHeader, Math.Max(0, _options.GlobalRateLimit - globalCount).ToString());
-            context.Response.Headers.Add(StringMessages.XRateLimitLimitIpHeader, _options.PerIpRateLimit.ToString());
-            context.Response.Headers.Add(StringMessages.XRateLimitRemainingIpHeader, Math.Max(0, _options.PerIpRateLimit - ipCount).ToString());
+            // Add/overwrite headers (use indexer to avoid duplicate key exceptions across multiple calls)
+            context.Response.Headers[StringMessages.XRateLimitLimitGlobalHeader] = _options.GlobalRateLimit.ToString();
+            context.Response.Headers[StringMessages.XRateLimitRemainingGlobalHeader] = Math.Max(0, _options.GlobalRateLimit - globalCount).ToString();
+            context.Response.Headers[StringMessages.XRateLimitLimitIpHeader] = _options.PerIpRateLimit.ToString();
+            context.Response.Headers[StringMessages.XRateLimitRemainingIpHeader] = Math.Max(0, _options.PerIpRateLimit - ipCount).ToString();
 
             if (_options.EnableEndpointRateLimiting)
             {
                 var endpointLimit = GetEndpointRateLimit(endpoint);
                 if (endpointLimit > 0)
                 {
-                    context.Response.Headers.Add(StringMessages.XRateLimitLimitEndpointHeader, endpointLimit.ToString());
-                    context.Response.Headers.Add(StringMessages.XRateLimitRemainingEndpointHeader, Math.Max(0, endpointLimit - endpointCount).ToString());
+                    context.Response.Headers[StringMessages.XRateLimitLimitEndpointHeader] = endpointLimit.ToString();
+                    context.Response.Headers[StringMessages.XRateLimitRemainingEndpointHeader] = Math.Max(0, endpointLimit - endpointCount).ToString();
                 }
             }
 
-            context.Response.Headers.Add(StringMessages.XRateLimitResetHeader, now.AddMinutes(_options.WindowInMinutes).ToString("R"));
+            context.Response.Headers[StringMessages.XRateLimitResetHeader] = now.AddMinutes(_options.WindowInMinutes).ToString("R");
         }
 
         /// <summary>
@@ -226,10 +226,10 @@ namespace SampleProject.Middleware
         {
             if (endpoint == StringMessages.AuthLoginEndpoint)
                 return _options.AuthRateLimit;
-            
+
             if (endpoint == StringMessages.AuthRefreshEndpoint)
                 return _options.RefreshTokenRateLimit;
-            
+
             return 0; // No specific limit
         }
 

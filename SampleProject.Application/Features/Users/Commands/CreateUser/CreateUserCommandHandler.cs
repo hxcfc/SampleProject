@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using SampleProject.Application.Interfaces;
 using SampleProject.Application.Interfaces.SampleProject.Authorization;
 using SampleProject.Domain.Common;
-using SampleProject.Domain.Dto;
+using SampleProject.Application.Dto;
 using SampleProject.Domain.Entities;
 using SampleProject.Domain.Enums;
 

@@ -1,13 +1,13 @@
 namespace SampleProject.Domain.Enums
 {
     /// <summary>
-    /// Enum representing user roles in the system using flags
+    /// Enum representing user Role in the system using flags
     /// </summary>
     [Flags]
     public enum UserRole
     {
         /// <summary>
-        /// No roles assigned
+        /// No Role assigned
         /// </summary>
         None = 0,
 
@@ -60,7 +60,7 @@ namespace SampleProject.Domain.Enums
         }
 
         /// <summary>
-        /// Gets all available roles as strings
+        /// Gets all available Role as strings
         /// </summary>
         /// <returns>Array of all role names</returns>
         public static string[] GetAllRoleNames()
@@ -72,14 +72,14 @@ namespace SampleProject.Domain.Enums
         }
 
         /// <summary>
-        /// Gets all roles from a flags enum value
+        /// Gets all Role from a flags enum value
         /// </summary>
-        /// <param name="roles">Roles flags</param>
+        /// <param name="Role">Role flags</param>
         /// <returns>Array of individual role names</returns>
-        public static string[] GetRoleNames(this UserRole roles)
+        public static string[] GetRoleNames(this UserRole Role)
         {
             return Enum.GetValues<UserRole>()
-                .Where(r => r != UserRole.None && roles.HasFlag(r))
+                .Where(r => r != UserRole.None && Role.HasFlag(r))
                 .Select(r => r.GetName())
                 .ToArray();
         }
@@ -87,21 +87,21 @@ namespace SampleProject.Domain.Enums
         /// <summary>
         /// Checks if the user has admin role
         /// </summary>
-        /// <param name="roles">User roles</param>
+        /// <param name="Role">User Role</param>
         /// <returns>True if user has admin role</returns>
-        public static bool IsAdmin(this UserRole roles)
+        public static bool IsAdmin(this UserRole Role)
         {
-            return roles.HasFlag(UserRole.Admin);
+            return Role.HasFlag(UserRole.Admin);
         }
 
         /// <summary>
         /// Checks if the user has user role
         /// </summary>
-        /// <param name="roles">User roles</param>
+        /// <param name="Role">User Role</param>
         /// <returns>True if user has user role</returns>
-        public static bool IsUser(this UserRole roles)
+        public static bool IsUser(this UserRole Role)
         {
-            return roles.HasFlag(UserRole.User);
+            return Role.HasFlag(UserRole.User);
         }
     }
 }

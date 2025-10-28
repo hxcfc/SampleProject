@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SampleProject.Domain.Entities;
-using SampleProject.Domain.Dto;
+using SampleProject.Application.Dto;
 using SampleProject.Infrastructure.Interfaces;
 using SampleProject.Persistence.Data;
 using Common.Shared;
@@ -78,6 +78,7 @@ namespace SampleProject.Infrastructure.Implementations
                 _logger.LogInformation(StringMessages.RetrievingUserByEmailFromDatabase, email);
 
                 var user = await _context.Users
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.Email == email.ToLowerInvariant());
 
                 if (user != null)
@@ -95,6 +96,23 @@ namespace SampleProject.Infrastructure.Implementations
             {
                 _logger.LogError(ex, StringMessages.ErrorOccurredWhileRetrievingUserByEmailFromDatabase, email);
                 return null;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> ExistsByEmailAsync(string email)
+        {
+            try
+            {
+                var normalized = email.ToLowerInvariant();
+                return await _context.Users
+                    .AsNoTracking()
+                    .AnyAsync(u => u.Email == normalized);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, StringMessages.ErrorOccurredWhileRetrievingUserByEmailFromDatabase, email);
+                return false;
             }
         }
 
@@ -165,7 +183,7 @@ namespace SampleProject.Infrastructure.Implementations
                 // Apply role filter
                 if (filters.Role.HasValue)
                 {
-                    query = query.Where(u => u.Roles == filters.Role.Value);
+                    query = query.Where(u => u.Role == filters.Role.Value);
                 }
 
                 // Apply active status filter

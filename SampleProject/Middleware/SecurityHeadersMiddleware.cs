@@ -17,11 +17,12 @@ namespace SampleProject.Middleware
         /// <param name="next">Next middleware in the pipeline</param>
         /// <param name="securityHeadersService">Security headers service</param>
         /// <param name="logger">Logger instance</param>
+        /// <exception cref="ArgumentNullException">Thrown when any parameter is null</exception>
         public SecurityHeadersMiddleware(RequestDelegate next, ISecurityHeadersService securityHeadersService, ILogger<SecurityHeadersMiddleware> logger)
         {
-            _next = next;
-            _securityHeadersService = securityHeadersService;
-            _logger = logger;
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _securityHeadersService = securityHeadersService ?? throw new ArgumentNullException(nameof(securityHeadersService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>

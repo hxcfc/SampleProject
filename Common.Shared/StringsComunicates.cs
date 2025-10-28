@@ -59,6 +59,12 @@
         // Auth Command Handler messages
         public static string AttemptingLoginForEmail = "Attempting login for email: {Email}";
 
+        public static string AttemptingToGetUserByEmail = "Attempting to get user by email: {Email}";
+        public static string AttemptingToGetUserById = "Attempting to get user by ID: {UserId}";
+
+        // User Service messages
+        public static string AttemptingUserRegistration = "Attempting user registration for email: {Email}";
+
         public static string AuthenticationEventsTotalDescription = "Total number of authentication events";
 
         public static string AuthenticationEventsTotalMetric = "authentication_events_total";
@@ -87,6 +93,16 @@
         public static string BearerTokenType = "Bearer";
         public static string BusinessEventsTotalDescription = "Total number of business events";
         public static string BusinessEventsTotalMetric = "business_events_total";
+
+        // Password Change messages
+        public static string ChangingPasswordForUser = "Changing password for user with ID: {UserId}";
+
+        // User Role Change messages
+        public static string ChangingUserRole = "Changing user role for user with ID: {UserId} to role: {NewRole}";
+
+        // Email Availability Check messages
+        public static string CheckingEmailAvailability = "Checking email availability for: {Email}";
+
         public static string ConfigurationOptionsConfigured = "Configuration options configured";
 
         // Configuration options messages
@@ -98,6 +114,10 @@
 
         public static string CorrelationIdTag = "correlation_id";
         public static string CpuMetricsCollected = "CPU metrics collected - Process CPU: {ProcessCpu}ms, GC Collections: {GcCollections}";
+
+        // User Repository messages
+        public static string CreatingUserInDatabase = "Creating user in database with email: {Email}";
+
         public static string CredentialsValidatedSuccessfullyForEmail = "Credentials validated successfully for email: {Email}";
 
         // File system messages
@@ -133,6 +153,7 @@
         // Database fallback values
         public static string DefaultDatabaseName = "SampleProjectDb";
 
+        public static string DeletingUserFromDatabase = "Deleting user from database with ID: {UserId}";
         public static string DesiredFolderPath = "Desired folder path selected";
         public static string DevelopmentEnvironment = "Development";
 
@@ -147,6 +168,7 @@
 
         public static string DockerRedisContainerName = "sampleproject-redis";
 
+        public static string EmailAvailabilityChecked = "Email availability checked for {Email}: {IsAvailable}";
         public static string EncryptionError = "Encryption error occurred";
 
         public static string EndpointRateLimitExceeded = "Endpoint rate limit exceeded for IP: {ClientIp}, Endpoint: {Endpoint}";
@@ -190,10 +212,26 @@
         public static string ErrorOccurredDuringLoginForEmail = "Error occurred during login for email: {Email}";
         public static string ErrorOccurredDuringLogout = "Error occurred during logout";
         public static string ErrorOccurredDuringTokenRefresh = "Error occurred during token refresh";
+        public static string ErrorOccurredDuringUserRegistration = "Error occurred during user registration for email: {Email}";
+        public static string ErrorOccurredWhileChangingPassword = "Error occurred while changing password for user with ID: {UserId}";
+        public static string ErrorOccurredWhileChangingUserRole = "Error occurred while changing user role for user with ID: {UserId}";
+        public static string ErrorOccurredWhileCheckingEmailAvailability = "Error occurred while checking email availability for: {Email}";
+        public static string ErrorOccurredWhileCheckingUserExistence = "Error occurred while checking user existence for email: {Email}";
+        public static string ErrorOccurredWhileCreatingUserInDatabase = "Error occurred while creating user in database with email: {Email}";
+        public static string ErrorOccurredWhileDeletingUserFromDatabase = "Error occurred while deleting user from database with ID: {UserId}";
+        public static string ErrorOccurredWhileGettingUserByEmail = "Error occurred while getting user by email: {Email}";
+        public static string ErrorOccurredWhileGettingUserById = "Error occurred while getting user by ID: {UserId}";
+        public static string ErrorOccurredWhileGettingUsersList = "Error occurred while getting users list";
+        public static string ErrorOccurredWhileGettingUsersListFromDatabase = "Error occurred while getting users list from database";
         public static string ErrorOccurredWhileRefreshingToken = "Error occurred while refreshing token";
 
+        public static string ErrorOccurredWhileRetrievingUserByEmailFromDatabase = "Error occurred while retrieving user by email from database: {Email}";
+        public static string ErrorOccurredWhileRetrievingUserByIdFromDatabase = "Error occurred while retrieving user by ID from database: {UserId}";
         public static string ErrorOccurredWhileRevokingRefreshToken = "Error occurred while revoking refresh token for user: {UserId}";
         public static string ErrorOccurredWhileSavingRefreshToken = "Error occurred while saving refresh token for user: {UserId}";
+        public static string ErrorOccurredWhileUpdatingPassword = "Error occurred while updating password for user with ID: {UserId}";
+        public static string ErrorOccurredWhileUpdatingUser = "Error occurred while updating user with ID: {UserId}";
+        public static string ErrorOccurredWhileUpdatingUserInDatabase = "Error occurred while updating user in database with ID: {UserId} and email: {Email}";
         public static string ErrorOccurredWhileValidatingCredentialsForEmail = "Error occurred while validating credentials for email: {Email}";
 
         public static string ErrorOccurredWhileValidatingRefreshToken = "Error occurred while validating refresh token";
@@ -202,26 +240,31 @@
         // Advanced Metrics Service tag names
         public static string EventTypeTag = "event_type";
 
+        public static string FailedToChangePassword = "Failed to change password for user with ID: {UserId}";
+        public static string FailedToChangeUserRole = "Failed to change user role for user with ID: {UserId}";
         public static string FailedToCollectCpuMetrics = "Failed to collect CPU metrics";
         public static string FailedToCollectMemoryMetrics = "Failed to collect memory metrics";
         public static string FailedToConfigureServicesFromAssembly = "Failed to configure services from assembly";
 
+        public static string FailedToCreateUser = "Failed to create user with email: {Email}";
         public static string FailedToEnsureDatabaseCreated = "Failed to ensure database is created";
 
         public static string FailedToGetEmailFromToken = "Failed to get email from token";
         public static string FailedToGetFirstNameFromToken = "Failed to get first name from token";
         public static string FailedToGetFullNameFromToken = "Failed to get full name from token";
         public static string FailedToGetLastNameFromToken = "Failed to get last name from token";
-        public static string FailedToGetRolesFromToken = "Failed to get roles from token";
+        public static string FailedToGetRoleFromToken = "Failed to get Role from token";
         public static string FailedToGetUserIdFromToken = "Failed to get user ID from token";
         public static string FailedToGetUserInfo = "Failed to get user information";
 
         public static string FailedToGetUsernameFromToken = "Failed to get username from token";
+        public static string FailedToGetUsersList = "Failed to get users list";
         public static string FailedToInstallServicesFromAssembly = "Failed to install services from assembly";
 
         public static string FailedToRevokeRefreshToken = "Failed to revoke refresh token for user: {UserId}";
         public static string FailedToSaveNewRefreshToken = "Failed to save new refresh token for user: {UserId}";
         public static string FailedToSaveRefreshTokenForUser = "Failed to save refresh token for user: {UserId}";
+        public static string FailedToUpdateUser = "Failed to update user with ID: {UserId}";
         public static string FileDataRead = "Reading from file";
 
         public static string FileNotFound = "File not found";
@@ -241,6 +284,11 @@
         public static string GcCollectionsMetric = "gc_collections_total";
         public static string GcTotalTypeTag = "gc_total";
         public static string GeneratedNewCorrelationId = "Generated new correlation ID: {CorrelationId}";
+
+        // Users List messages
+        public static string GettingUsersList = "Getting users list - Page: {Page}, PageSize: {PageSize}";
+
+        public static string GettingUsersListFromDatabase = "Getting users list from database - Page: {Page}, PageSize: {PageSize}";
         public static string GlobalRateLimitExceeded = "Global rate limit exceeded for IP: {ClientIp}";
         public static string GlobalRateLimitKey = "global";
         public static string GrafanaDashboardRefresh = "5s";
@@ -298,8 +346,14 @@
 
         public static string InstallingServicesFrom = "Installing services from {InstallerName} (Order: {Order})";
 
+        public static string InsufficientPermissions = "Insufficient permissions to access this resource";
         public static string InvalidCredentialsProvidedForEmail = "Invalid credentials provided for email: {Email}";
+        public static string InvalidCurrentPassword = "Invalid current password for user with ID: {UserId}";
+        public static string InvalidEmailFormat = "Invalid email format: {Email}";
         public static string InvalidEmailOrPassword = "Invalid email or password";
+        public static string AccountNotActive = "Account is not active";
+        public static string InvalidUserId = "Invalid user ID provided";
+        public static string InvalidUserIdProvided = "Invalid user ID provided: {UserId}";
 
         public static string InvalidOrExpiredRefreshToken = "Invalid or expired refresh token";
         public static string InvalidPassword = "Invalid password";
@@ -310,6 +364,7 @@
 
         public static string InvalidRefreshTokenProvided = "Invalid refresh token provided";
 
+        public static string InvalidToken = "Invalid or missing authentication token";
         public static string JWTAudienceNotConfigured = "JWT Audience is not configured";
 
         public static string JWTAuthenticationChallenge = "JWT authentication challenge: {Error}";
@@ -329,7 +384,7 @@
 
         public static string JWTSecretKeyTooShort = "JWT SecretKey must be at least 32 characters long for security";
 
-        public static string JwtTokenGeneratedForUser = "JWT token generated for user: {Username} with roles: {Roles}";
+        public static string JwtTokenGeneratedForUser = "JWT token generated for user: {Username} with Role: {Role}";
         public static string JwtTokensSetAsHttpOnlyCookies = "JWT tokens set as HTTP-only cookies";
         public static string JWTTokenValidatedSuccessfully = "JWT token validated successfully for user: {User}";
         public static string JwtTokenValidationFailed = "JWT token validation failed";
@@ -433,6 +488,8 @@
         // BaseController messages
         public static string OperationFailed = "Operation Failed";
 
+        public static string PasswordChangedSuccessfully = "Password changed successfully for user with ID: {UserId}";
+        public static string PasswordUpdatedForUser = "Password updated for user with ID: {UserId}";
         public static string PathTag = "path";
         public static string PerIpRateLimitExceeded = "Per-IP rate limit exceeded for IP: {ClientIp}";
 
@@ -513,6 +570,8 @@
         // Restart policies
         public static string RestartPolicyUnlessStopped = "unless-stopped";
 
+        public static string RetrievingUserByEmailFromDatabase = "Retrieving user by email from database: {Email}";
+        public static string RetrievingUserByIdFromDatabase = "Retrieving user by ID from database: {UserId}";
         public static string RevokingRefreshTokenForUser = "Revoking refresh token for user: {UserId}";
         public static string SavingRefreshTokenForUser = "Saving refresh token for user: {UserId}";
         public static string SensitiveDataLoggingEnabled = "Sensitive data logging is enabled - this should only be used in development";
@@ -556,6 +615,10 @@
         public static string TokenRefreshFailed = "Token refresh failed";
         public static string TotalTypeTag = "total";
         public static string TypeNotImplemented = "Type not implemented";
+
+        // Authorization messages
+        public static string Unauthorized = "Unauthorized";
+
         public static string UnexpectedErrorOccurred = "An unexpected error occurred";
 
         // ExceptionHandlingMiddleware messages
@@ -565,12 +628,41 @@
         public static string UnknownIpAddress = "Unknown";
         public static string UnknownUser = "Unknown";
         public static string UnknownValue = "unknown";
+        public static string UpdatingPasswordForUser = "Updating password for user with ID: {UserId}";
+
+        // User Update messages
+        public static string UpdatingUser = "Updating user with ID: {UserId}";
+
+        public static string UpdatingUserInDatabase = "Updating user in database with ID: {UserId} and email: {Email}";
+        public static string UserAlreadyExists = "User with email {Email} already exists";
+        public static string UserCreatedInDatabase = "User created in database with ID: {UserId} and email: {Email}";
+        public static string UserDeletedFromDatabase = "User deleted from database with ID: {UserId}";
         public static string UserIdTag = "user_id";
         public static string UserLogoutProcessedSuccessfully = "User logout processed successfully";
         public static string UserNotFound = "User not found";
+        public static string UserNotFoundByEmailInDatabase = "User not found by email in database: {Email}";
+        public static string UserNotFoundByIdInDatabase = "User not found by ID in database: {UserId}";
+        public static string UserNotFoundForDeletion = "User not found for deletion with ID: {UserId}";
         public static string UserNotFoundForEmail = "User not found for email: {Email}";
+        public static string UserNotFoundForId = "User not found for ID: {UserId}";
+        public static string UserNotFoundForPasswordUpdate = "User not found for password update with ID: {UserId}";
         public static string UserOrAdminPolicy = "UserOrAdmin";
+        public static string UserRegisteredSuccessfully = "User registered successfully with ID: {UserId} and email: {Email}";
+        public static string UserRetrievedByEmailFromDatabase = "User retrieved by email from database: {Email}";
+        public static string UserRetrievedByIdFromDatabase = "User retrieved by ID from database: {UserId}";
+        public static string UserRetrievedSuccessfully = "User retrieved successfully with ID: {UserId}";
+        public static string UserRetrievedSuccessfullyByEmail = "User retrieved successfully by email: {Email}";
         public static string UserRole = "User";
+
+        public static string UserRoleChangedSuccessfully = "User role changed successfully for user with ID: {UserId} to role: {NewRole}";
+
+        public static string UsersListRetrieved = "Users list retrieved successfully - Count: {Count}, Total: {TotalCount}";
+
+        public static string UsersListRetrievedFromDatabase = "Users list retrieved from database - Count: {Count}, Total: {TotalCount}";
+
+        public static string UserUpdatedInDatabase = "User updated in database with ID: {UserId} and email: {Email}";
+
+        public static string UserUpdatedSuccessfully = "User updated successfully with ID: {UserId}";
 
         // Database messages
         public static string UsingInMemoryDatabase = "Using In-Memory database: {DatabaseName}";
@@ -599,83 +691,6 @@
         public static string XRateLimitRemainingIpHeader = "X-RateLimit-Remaining-IP";
         public static string XRateLimitResetHeader = "X-RateLimit-Reset";
         public static string XRealIpHeader = "X-Real-IP";
-
-        // User Service messages
-        public static string AttemptingUserRegistration = "Attempting user registration for email: {Email}";
-        public static string UserAlreadyExists = "User with email {Email} already exists";
-        public static string FailedToCreateUser = "Failed to create user with email: {Email}";
-        public static string UserRegisteredSuccessfully = "User registered successfully with ID: {UserId} and email: {Email}";
-        public static string ErrorOccurredDuringUserRegistration = "Error occurred during user registration for email: {Email}";
-        public static string AttemptingToGetUserById = "Attempting to get user by ID: {UserId}";
-        public static string UserNotFoundForId = "User not found for ID: {UserId}";
-        public static string UserRetrievedSuccessfully = "User retrieved successfully with ID: {UserId}";
-        public static string ErrorOccurredWhileGettingUserById = "Error occurred while getting user by ID: {UserId}";
-        public static string AttemptingToGetUserByEmail = "Attempting to get user by email: {Email}";
-        public static string UserRetrievedSuccessfullyByEmail = "User retrieved successfully by email: {Email}";
-        public static string ErrorOccurredWhileGettingUserByEmail = "Error occurred while getting user by email: {Email}";
-        public static string ErrorOccurredWhileCheckingUserExistence = "Error occurred while checking user existence for email: {Email}";
-
-        // User Repository messages
-        public static string CreatingUserInDatabase = "Creating user in database with email: {Email}";
-        public static string UserCreatedInDatabase = "User created in database with ID: {UserId} and email: {Email}";
-        public static string ErrorOccurredWhileCreatingUserInDatabase = "Error occurred while creating user in database with email: {Email}";
-        public static string RetrievingUserByIdFromDatabase = "Retrieving user by ID from database: {UserId}";
-        public static string UserRetrievedByIdFromDatabase = "User retrieved by ID from database: {UserId}";
-        public static string UserNotFoundByIdInDatabase = "User not found by ID in database: {UserId}";
-        public static string ErrorOccurredWhileRetrievingUserByIdFromDatabase = "Error occurred while retrieving user by ID from database: {UserId}";
-        public static string RetrievingUserByEmailFromDatabase = "Retrieving user by email from database: {Email}";
-        public static string UserRetrievedByEmailFromDatabase = "User retrieved by email from database: {Email}";
-        public static string UserNotFoundByEmailInDatabase = "User not found by email in database: {Email}";
-        public static string ErrorOccurredWhileRetrievingUserByEmailFromDatabase = "Error occurred while retrieving user by email from database: {Email}";
-        public static string UpdatingUserInDatabase = "Updating user in database with ID: {UserId} and email: {Email}";
-        public static string UserUpdatedInDatabase = "User updated in database with ID: {UserId} and email: {Email}";
-        public static string ErrorOccurredWhileUpdatingUserInDatabase = "Error occurred while updating user in database with ID: {UserId} and email: {Email}";
-        public static string DeletingUserFromDatabase = "Deleting user from database with ID: {UserId}";
-        public static string UserNotFoundForDeletion = "User not found for deletion with ID: {UserId}";
-        public static string UserDeletedFromDatabase = "User deleted from database with ID: {UserId}";
-        public static string ErrorOccurredWhileDeletingUserFromDatabase = "Error occurred while deleting user from database with ID: {UserId}";
-
-        // Email Availability Check messages
-        public static string CheckingEmailAvailability = "Checking email availability for: {Email}";
-        public static string EmailAvailabilityChecked = "Email availability checked for {Email}: {IsAvailable}";
-        public static string ErrorOccurredWhileCheckingEmailAvailability = "Error occurred while checking email availability for: {Email}";
-
-        // Authorization messages
-        public static string Unauthorized = "Unauthorized";
-        public static string InvalidToken = "Invalid or missing authentication token";
-        public static string InsufficientPermissions = "Insufficient permissions to access this resource";
-
-        // Users List messages
-        public static string GettingUsersList = "Getting users list - Page: {Page}, PageSize: {PageSize}";
-        public static string UsersListRetrieved = "Users list retrieved successfully - Count: {Count}, Total: {TotalCount}";
-        public static string FailedToGetUsersList = "Failed to get users list";
-        public static string ErrorOccurredWhileGettingUsersList = "Error occurred while getting users list";
-        public static string GettingUsersListFromDatabase = "Getting users list from database - Page: {Page}, PageSize: {PageSize}";
-        public static string UsersListRetrievedFromDatabase = "Users list retrieved from database - Count: {Count}, Total: {TotalCount}";
-        public static string ErrorOccurredWhileGettingUsersListFromDatabase = "Error occurred while getting users list from database";
-
-        // User Update messages
-        public static string UpdatingUser = "Updating user with ID: {UserId}";
-        public static string UserUpdatedSuccessfully = "User updated successfully with ID: {UserId}";
-        public static string FailedToUpdateUser = "Failed to update user with ID: {UserId}";
-        public static string ErrorOccurredWhileUpdatingUser = "Error occurred while updating user with ID: {UserId}";
-
-        // Password Change messages
-        public static string ChangingPasswordForUser = "Changing password for user with ID: {UserId}";
-        public static string PasswordChangedSuccessfully = "Password changed successfully for user with ID: {UserId}";
-        public static string FailedToChangePassword = "Failed to change password for user with ID: {UserId}";
-        public static string ErrorOccurredWhileChangingPassword = "Error occurred while changing password for user with ID: {UserId}";
-        public static string InvalidCurrentPassword = "Invalid current password for user with ID: {UserId}";
-        public static string UpdatingPasswordForUser = "Updating password for user with ID: {UserId}";
-        public static string PasswordUpdatedForUser = "Password updated for user with ID: {UserId}";
-        public static string ErrorOccurredWhileUpdatingPassword = "Error occurred while updating password for user with ID: {UserId}";
-        public static string UserNotFoundForPasswordUpdate = "User not found for password update with ID: {UserId}";
-
-        // User Role Change messages
-        public static string ChangingUserRole = "Changing user role for user with ID: {UserId} to role: {NewRole}";
-        public static string UserRoleChangedSuccessfully = "User role changed successfully for user with ID: {UserId} to role: {NewRole}";
-        public static string FailedToChangeUserRole = "Failed to change user role for user with ID: {UserId}";
-        public static string ErrorOccurredWhileChangingUserRole = "Error occurred while changing user role for user with ID: {UserId}";
 
         // Configuration
         private static string configFileName = ApplicationInfo.Name;
