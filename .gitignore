@@ -66,6 +66,7 @@ TestResults/
 docker-data/
 .docker/
 **/data/
+!**/Data/ApplicationDbContext.cs
 **/postgres-data/
 **/redis-data/
 **/mongo-data/
