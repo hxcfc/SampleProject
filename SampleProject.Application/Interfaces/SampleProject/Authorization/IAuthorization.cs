@@ -19,8 +19,9 @@ namespace SampleProject.Application.Interfaces.SampleProject.Authorization
         /// </summary>
         /// <param name="email">User's email address</param>
         /// <param name="password">User's password</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>User information if credentials are valid, null otherwise</returns>
-        Task<UserDto?> ValidateCredentialsAsync(string email, string password);
+        Task<UserDto?> ValidateCredentialsAsync(string email, string password, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Saves refresh token for user

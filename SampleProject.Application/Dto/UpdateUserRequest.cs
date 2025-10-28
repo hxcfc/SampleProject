@@ -1,20 +1,13 @@
-using MediatR;
-using SampleProject.Domain.Common;
-using SampleProject.Application.Dto;
+using System.ComponentModel.DataAnnotations;
 using SampleProject.Domain.Enums;
 
-namespace SampleProject.Application.Features.Users.Commands.UpdateUser
+namespace SampleProject.Application.Dto
 {
     /// <summary>
-    /// Command to update user information (without password)
+    /// Request DTO for updating user information
     /// </summary>
-    public class UpdateUserCommand : IRequest<Result<UserDto>>
+    public class UpdateUserRequest
     {
-        /// <summary>
-        /// User ID to update
-        /// </summary>
-        public Guid UserId { get; set; }
-
         /// <summary>
         /// User's first name
         /// </summary>
@@ -28,6 +21,7 @@ namespace SampleProject.Application.Features.Users.Commands.UpdateUser
         /// <summary>
         /// User's email address
         /// </summary>
+        [EmailAddress]
         public string? Email { get; set; }
 
         /// <summary>
@@ -44,21 +38,5 @@ namespace SampleProject.Application.Features.Users.Commands.UpdateUser
         /// User's role (Admin only)
         /// </summary>
         public UserRole? Role { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of UpdateUserCommand
-        /// </summary>
-        public UpdateUserCommand()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of UpdateUserCommand
-        /// </summary>
-        /// <param name="userId">User ID to update</param>
-        public UpdateUserCommand(Guid userId)
-        {
-            UserId = userId;
-        }
     }
 }

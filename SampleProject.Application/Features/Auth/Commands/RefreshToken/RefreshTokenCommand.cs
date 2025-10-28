@@ -5,13 +5,11 @@ using SampleProject.Domain.Responses;
 namespace SampleProject.Application.Features.Auth.Commands.RefreshToken
 {
     /// <summary>
-    /// Command to refresh a JWT token
+    /// Command to refresh a JWT token using refresh token from HTTP-only cookies
     /// </summary>
     public record RefreshTokenCommand : IRequest<Result<TokenResponse>>
     {
-        /// <summary>
-        /// The refresh token
-        /// </summary>
-        public required string RefreshToken { get; init; }
+        // No properties needed - refresh token will be extracted from cookies
+        // This enables stateless refresh via cookie authentication
     }
 }

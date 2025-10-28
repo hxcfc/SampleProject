@@ -42,8 +42,9 @@ namespace SampleProject.Infrastructure.Implementations
         /// <param name="lastName">User last name</param>
         /// <param name="Role">User Role as enum flags</param>
         /// <returns>Token response</returns>
-        public async Task<TokenResponse> GenerateTokenAsync(string userId, string username, string email, string firstName, string lastName, UserRole Role)
+        public Task<TokenResponse> GenerateTokenAsync(string userId, string username, string email, string firstName, string lastName, UserRole Role)
         {
+            var now = DateTimeOffset.UtcNow;
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, userId),
@@ -56,7 +57,8 @@ namespace SampleProject.Infrastructure.Implementations
                 new(JwtRegisteredClaimNames.GivenName, firstName),
                 new(JwtRegisteredClaimNames.FamilyName, lastName),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new(JwtRegisteredClaimNames.Iat, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+                new(JwtRegisteredClaimNames.Iat, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+                new(JwtRegisteredClaimNames.Nbf, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
             };
 
             // Add role claim - only the specific role, not all possible roles
@@ -85,7 +87,7 @@ namespace SampleProject.Infrastructure.Implementations
             Log.Information(StringMessages.JwtTokenGeneratedForUser, 
                 username, roleName);
 
-            return await Task.FromResult(new TokenResponse
+            return Task.FromResult(new TokenResponse
             {
                 AccessToken = tokenString,
                 RefreshToken = refreshToken,
@@ -131,6 +133,48 @@ namespace SampleProject.Infrastructure.Implementations
 
                 _tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken);
                 return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, StringMessages.JwtTokenValidationFailed);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Validates a JWT token asynchronously
+        /// </summary>
+        /// <param name="token">JWT token</param>
+        /// <returns>True if valid, false otherwise</returns>
+        public async Task<bool> ValidateTokenAsync(string token)
+        {
+            try
+            {
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+                var tokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = _jwtOptions.Issuer,
+                    ValidAudience = _jwtOptions.Audience,
+                    IssuerSigningKey = key,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                await Task.Run(() => _tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken validatedToken));
+                return true;
+            }
+            catch (SecurityTokenExpiredException ex)
+            {
+                Log.Warning(ex, "JWT token has expired");
+                return false;
+            }
+            catch (SecurityTokenException ex)
+            {
+                Log.Warning(ex, "JWT token validation failed: {Error}", ex.Message);
+                return false;
             }
             catch (Exception ex)
             {

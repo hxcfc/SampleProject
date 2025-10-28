@@ -38,27 +38,63 @@ namespace SampleProject.Infrastructure.Implementations
             {
                 _logger.LogInformation(StringMessages.RefreshingToken);
 
-                // TODO: Implement actual token refresh logic
-                // This is a placeholder implementation
                 if (string.IsNullOrWhiteSpace(refreshToken))
                 {
                     _logger.LogWarning(StringMessages.InvalidRefreshTokenProvided);
                     return null;
                 }
 
-                // Simulate async operation
-                await Task.Delay(50);
+                // Validate refresh token and get user information
+                var user = await ValidateRefreshTokenAsync(refreshToken);
+                if (user == null)
+                {
+                    _logger.LogWarning(StringMessages.InvalidOrExpiredRefreshToken);
+                    return null;
+                }
 
-                var newToken = $"refreshed_jwt_token_{DateTime.UtcNow.Ticks}";
+                // Check if user is active
+                if (!user.IsActive)
+                {
+                    _logger.LogWarning("Account is not active for user: {UserId}", user.Id);
+                    return null;
+                }
+
+                // Generate new refresh token
+                var newRefreshToken = GenerateRefreshToken();
+                var refreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // 7 days expiry
+
+                // Save new refresh token to database (replace old one)
+                var refreshTokenSaved = await SaveRefreshTokenAsync(
+                    user.Id, 
+                    newRefreshToken, 
+                    refreshTokenExpiryTime);
+
+                if (!refreshTokenSaved)
+                {
+                    _logger.LogWarning("Failed to save new refresh token for user: {UserId}", user.Id);
+                    return null;
+                }
 
                 _logger.LogInformation(StringMessages.TokenRefreshedSuccessfully);
-                return newToken;
+                return newRefreshToken;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, StringMessages.ErrorOccurredWhileRefreshingToken);
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Generates a new refresh token
+        /// </summary>
+        /// <returns>Refresh token</returns>
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
 
         /// <inheritdoc />
@@ -128,7 +164,7 @@ namespace SampleProject.Infrastructure.Implementations
         }
 
         /// <inheritdoc />
-        public async Task<UserDto?> ValidateCredentialsAsync(string email, string password)
+        public async Task<UserDto?> ValidateCredentialsAsync(string email, string password, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -161,7 +197,7 @@ namespace SampleProject.Infrastructure.Implementations
                 // Update last login
                 userEntity.LastLoginAt = DateTime.UtcNow;
                 userEntity.UpdatedAt = DateTime.UtcNow;
-                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Map to DTO
                 var userDto = new UserDto

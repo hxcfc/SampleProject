@@ -45,6 +45,12 @@ namespace SampleProject.Persistence.UnitOfWork
         }
 
         /// <inheritdoc />
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            return await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        /// <inheritdoc />
         public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
             return await _context.Database.BeginTransactionAsync();

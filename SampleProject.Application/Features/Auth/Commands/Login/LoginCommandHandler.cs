@@ -31,7 +31,7 @@ namespace SampleProject.Application.Features.Auth.Commands.Login
                 _logger.LogInformation(StringMessages.AttemptingLoginForEmail, request.Email);
 
                 // Validate credentials
-                var user = await _authorization.ValidateCredentialsAsync(request.Email, request.Password);
+                var user = await _authorization.ValidateCredentialsAsync(request.Email, request.Password, cancellationToken);
                 if (user == null)
                 {
                     _logger.LogWarning(StringMessages.InvalidCredentialsProvidedForEmail, request.Email);

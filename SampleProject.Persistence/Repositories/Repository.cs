@@ -64,17 +64,17 @@ namespace SampleProject.Persistence.Repositories
         }
 
         /// <inheritdoc />
-        public virtual async Task<T> UpdateAsync(T entity)
+        public virtual Task<T> UpdateAsync(T entity)
         {
             _dbSet.Update(entity);
-            return await Task.FromResult(entity);
+            return Task.FromResult(entity);
         }
 
         /// <inheritdoc />
-        public virtual async Task<bool> DeleteAsync(T entity)
+        public virtual Task<bool> DeleteAsync(T entity)
         {
             _dbSet.Remove(entity);
-            return await Task.FromResult(true);
+            return Task.FromResult(true);
         }
 
         /// <inheritdoc />

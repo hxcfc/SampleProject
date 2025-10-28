@@ -1,3 +1,5 @@
+using FluentValidation;
+
 namespace SampleProject.Application.Features.Auth.Commands.Login
 {
     /// <summary>

@@ -1,4 +1,5 @@
 using SampleProject.Infrastructure.Interfaces;
+using Microsoft.IdentityModel.Tokens;
 
 namespace SampleProject.Middleware
 {
@@ -59,17 +60,27 @@ namespace SampleProject.Middleware
 
                 if (!string.IsNullOrEmpty(token))
                 {
-                    // Validate token and extract claims
-                    var claims = ExtractClaimsFromToken(token, extendedJwtService);
-
-                    if (claims.Any())
+                    // Validate token asynchronously
+                    var isValid = await extendedJwtService.ValidateTokenAsync(token);
+                    
+                    if (isValid)
                     {
-                        // Create ClaimsIdentity and set HttpContext.User
-                        var identity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme);
-                        context.User = new ClaimsPrincipal(identity);
+                        // Extract claims from valid token
+                        var claims = await ExtractClaimsFromTokenAsync(token, extendedJwtService);
 
-                        _logger.LogDebug("JWT token processed successfully for user: {UserId}",
-                            claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+                        if (claims.Any())
+                        {
+                            // Create ClaimsIdentity and set HttpContext.User
+                            var identity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme);
+                            context.User = new ClaimsPrincipal(identity);
+
+                            _logger.LogDebug("JWT token processed successfully for user: {UserId}",
+                                claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Failed to extract claims from valid JWT token");
+                        }
                     }
                     else
                     {
@@ -83,31 +94,35 @@ namespace SampleProject.Middleware
 
                 await _next(context);
             }
+            catch (SecurityTokenExpiredException ex)
+            {
+                _logger.LogWarning(ex, "JWT token has expired");
+                await _next(context);
+            }
+            catch (SecurityTokenException ex)
+            {
+                _logger.LogWarning(ex, "JWT token validation failed: {Error}", ex.Message);
+                await _next(context);
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred in JwtTokenMiddleware");
+                _logger.LogError(ex, "Unexpected error occurred in JwtTokenMiddleware");
                 // Continue processing without rethrowing to allow the request to proceed
                 await _next(context);
             }
         }
 
         /// <summary>
-        /// Extracts claims from JWT token
+        /// Extracts claims from JWT token asynchronously
         /// </summary>
         /// <param name="token">JWT token</param>
         /// <param name="extendedJwtService">Extended JWT service</param>
         /// <returns>List of claims</returns>
-        private static List<Claim> ExtractClaimsFromToken(string token, IExtendedJwtService extendedJwtService)
+        private static async Task<List<Claim>> ExtractClaimsFromTokenAsync(string token, IExtendedJwtService extendedJwtService)
         {
             try
             {
                 var claims = new List<Claim>();
-
-                // Validate token first
-                if (!extendedJwtService.ValidateToken(token))
-                {
-                    return claims;
-                }
 
                 // Extract user information
                 var userId = extendedJwtService.GetUserIdFromToken(token);
@@ -149,12 +164,11 @@ namespace SampleProject.Middleware
 
                 // Add role claims
                 if (!string.IsNullOrEmpty(role))
-
                 {
                     claims.Add(new Claim(ClaimTypes.Role, role));
                 }
 
-                return claims;
+                return await Task.FromResult(claims);
             }
             catch (Exception)
             {

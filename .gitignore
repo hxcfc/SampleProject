@@ -65,8 +65,6 @@ TestResults/
 # Docker/local volumes (if created locally)
 docker-data/
 .docker/
-**/data/
-!**/Data/ApplicationDbContext.cs
 **/postgres-data/
 **/redis-data/
 **/mongo-data/

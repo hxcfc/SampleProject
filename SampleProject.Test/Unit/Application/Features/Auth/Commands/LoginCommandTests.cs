@@ -55,7 +55,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             };
 
             _authorizationMock
-                .Setup(x => x.ValidateCredentialsAsync(command.Email, command.Password))
+                .Setup(x => x.ValidateCredentialsAsync(command.Email, command.Password, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(user);
 
             // Act
@@ -66,7 +66,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be("Account is not active");
 
-            _authorizationMock.Verify(x => x.ValidateCredentialsAsync(command.Email, command.Password), Times.Once);
+            _authorizationMock.Verify(x => x.ValidateCredentialsAsync(command.Email, command.Password, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             };
 
             _authorizationMock
-                .Setup(x => x.ValidateCredentialsAsync(command.Email, command.Password))
+                .Setup(x => x.ValidateCredentialsAsync(command.Email, command.Password, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((UserDto?)null);
 
             // Act
@@ -91,7 +91,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be("Invalid email or password");
 
-            _authorizationMock.Verify(x => x.ValidateCredentialsAsync(command.Email, command.Password), Times.Once);
+            _authorizationMock.Verify(x => x.ValidateCredentialsAsync(command.Email, command.Password, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             };
 
             _authorizationMock
-                .Setup(x => x.ValidateCredentialsAsync(command.Email, command.Password))
+                .Setup(x => x.ValidateCredentialsAsync(command.Email, command.Password, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((UserDto?)null);
 
             // Act
@@ -116,7 +116,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be("Invalid email or password");
 
-            _authorizationMock.Verify(x => x.ValidateCredentialsAsync(command.Email, command.Password), Times.Once);
+            _authorizationMock.Verify(x => x.ValidateCredentialsAsync(command.Email, command.Password, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -142,7 +142,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             };
 
             _authorizationMock
-                .Setup(x => x.ValidateCredentialsAsync(command.Email, command.Password))
+                .Setup(x => x.ValidateCredentialsAsync(command.Email, command.Password, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(user);
 
             _jwtServiceMock
@@ -157,7 +157,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be("An error occurred during login");
 
-            _authorizationMock.Verify(x => x.ValidateCredentialsAsync(command.Email, command.Password), Times.Once);
+            _authorizationMock.Verify(x => x.ValidateCredentialsAsync(command.Email, command.Password, It.IsAny<CancellationToken>()), Times.Once);
             _jwtServiceMock.Verify(x => x.GenerateTokenAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<UserRole>()), Times.Once);
         }
 
@@ -184,7 +184,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             };
 
             _authorizationMock
-                .Setup(x => x.ValidateCredentialsAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.ValidateCredentialsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(user);
 
             _jwtServiceMock
@@ -212,7 +212,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             result.Value!.AccessToken.Should().Be("access_token");
             result.Value!.RefreshToken.Should().Be("refresh_token");
 
-            _authorizationMock.Verify(x => x.ValidateCredentialsAsync(command.Email, command.Password), Times.Once);
+            _authorizationMock.Verify(x => x.ValidateCredentialsAsync(command.Email, command.Password, It.IsAny<CancellationToken>()), Times.Once);
             _jwtServiceMock.Verify(x => x.GenerateTokenAsync(user.Id.ToString(), user.Email, user.Email, user.FirstName, user.LastName, user.Role), Times.Once);
             _authorizationMock.Verify(x => x.SaveRefreshTokenAsync(user.Id, It.IsAny<string>(), It.IsAny<DateTime>()), Times.Once);
         }
@@ -240,7 +240,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             };
 
             _authorizationMock
-                .Setup(x => x.ValidateCredentialsAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.ValidateCredentialsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(user);
 
             _jwtServiceMock
@@ -268,7 +268,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             result.Value!.AccessToken.Should().Be("access_token");
             result.Value!.RefreshToken.Should().Be("refresh_token");
 
-            _authorizationMock.Verify(x => x.ValidateCredentialsAsync(command.Email, command.Password), Times.Once);
+            _authorizationMock.Verify(x => x.ValidateCredentialsAsync(command.Email, command.Password, It.IsAny<CancellationToken>()), Times.Once);
             _jwtServiceMock.Verify(x => x.GenerateTokenAsync(user.Id.ToString(), user.Email, user.Email, user.FirstName, user.LastName, user.Role), Times.Once);
             _authorizationMock.Verify(x => x.SaveRefreshTokenAsync(user.Id, It.IsAny<string>(), It.IsAny<DateTime>()), Times.Once);
         }

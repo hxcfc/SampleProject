@@ -26,6 +26,13 @@ namespace SampleProject.Application.Features.Users.Commands.ChangePassword
         /// <summary>
         /// Initializes a new instance of ChangePasswordCommand
         /// </summary>
+        public ChangePasswordCommand()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of ChangePasswordCommand
+        /// </summary>
         /// <param name="userId">User ID to change password for</param>
         /// <param name="currentPassword">Current password</param>
         /// <param name="newPassword">New password</param>

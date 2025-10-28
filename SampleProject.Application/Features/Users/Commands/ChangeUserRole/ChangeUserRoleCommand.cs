@@ -23,6 +23,13 @@ namespace SampleProject.Application.Features.Users.Commands.ChangeUserRole
         /// <summary>
         /// Initializes a new instance of ChangeUserRoleCommand
         /// </summary>
+        public ChangeUserRoleCommand()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of ChangeUserRoleCommand
+        /// </summary>
         /// <param name="userId">User ID to change role for</param>
         /// <param name="newRole">New user role</param>
         public ChangeUserRoleCommand(Guid userId, UserRole newRole)

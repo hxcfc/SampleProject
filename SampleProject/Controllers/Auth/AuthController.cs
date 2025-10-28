@@ -149,22 +149,22 @@ namespace SampleProject.Controllers.Auth
         }
 
         /// <summary>
-        /// Refresh JWT access token using refresh token
+        /// Refresh JWT access token using refresh token from HTTP-only cookies
         /// </summary>
-        /// <param name="command">Refresh token command containing the refresh token</param>
         /// <returns>New JWT access and refresh tokens stored in HTTP-only cookies</returns>
         /// <response code="200">Token refreshed successfully - new tokens in cookies</response>
         [SwaggerOperation(
             Summary = "Refresh access token",
-            Description = "Refreshes the JWT access token using a valid refresh token. Generates new access and refresh tokens and updates them in HTTP-only cookies. The refresh token is validated against the database and its usage count is incremented.",
+            Description = "Refreshes the JWT access token using a valid refresh token from HTTP-only cookies. This enables stateless refresh authentication. Generates new access and refresh tokens and updates them in HTTP-only cookies. The refresh token is validated against the database and its usage count is incremented.",
             OperationId = "RefreshToken"
         )]
         [SwaggerResponse(200, "Token refreshed successfully - new tokens stored in cookies")]
         [SwaggerResponse(400, "Invalid or expired refresh token")]
         [HttpPost("refresh")]
         [AllowAnonymous]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenCommand command)
+        public async Task<IActionResult> RefreshToken()
         {
+            var command = new RefreshTokenCommand();
             var result = await Mediator.Send(command);
 
             if (result.IsSuccess && result.Value != null)

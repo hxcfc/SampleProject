@@ -131,7 +131,7 @@ namespace SampleProject.Test.Unit.Middleware
                 x => x.Log(
                     LogLevel.Error,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Error occurred in JwtTokenMiddleware")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Unexpected error occurred in JwtTokenMiddleware")),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
@@ -350,8 +350,8 @@ namespace SampleProject.Test.Unit.Middleware
                 .Returns(token);
 
             _jwtServiceMock
-                .Setup(x => x.ValidateToken(token))
-                .Returns(true);
+                .Setup(x => x.ValidateTokenAsync(token))
+                .ReturnsAsync(true);
 
             _jwtServiceMock
                 .Setup(x => x.GetUserIdFromToken(token))
@@ -413,8 +413,8 @@ namespace SampleProject.Test.Unit.Middleware
                 .Returns(token);
 
             _jwtServiceMock
-                .Setup(x => x.ValidateToken(token))
-                .Returns(true);
+                .Setup(x => x.ValidateTokenAsync(token))
+                .ReturnsAsync(true);
 
             _jwtServiceMock
                 .Setup(x => x.GetUserIdFromToken(token))

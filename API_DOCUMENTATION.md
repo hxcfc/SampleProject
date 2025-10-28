@@ -185,14 +185,10 @@ Logout user and revoke tokens.
 ---
 
 #### POST /api/v1/auth/refresh
-Refresh access token using refresh token.
+Refresh access token using refresh token from HTTP-only cookies.
 
 **Request:**
-```json
-{
-  "refreshToken": "valid_refresh_token_here"
-}
-```
+No body required - refresh token is automatically extracted from `auth_refresh` cookie.
 
 **Response:**
 ```json
@@ -203,7 +199,13 @@ Refresh access token using refresh token.
 }
 ```
 
+**Cookies Updated:**
+- `auth_session`: New JWT access token
+- `auth_refresh`: New refresh token
+
 **Rate Limit:** 5 requests/minute
+
+**Note:** This endpoint enables stateless refresh authentication via HTTP-only cookies, eliminating the need for clients to manage refresh tokens manually.
 
 ---
 
@@ -395,6 +397,8 @@ Update current user's profile information.
 }
 ```
 
+**Note:** This endpoint automatically uses the current user's ID from the JWT token. No `userId` parameter is required in the request body.
+
 **Response:**
 ```json
 {
@@ -435,9 +439,12 @@ Update any user's information (Admin only).
   "lastName": "Doe",
   "email": "john.doe@example.com",
   "isActive": true,
-  "isEmailVerified": true
+  "isEmailVerified": true,
+  "role": "Admin"
 }
 ```
+
+**Note:** The `userId` is provided in the URL path, not in the request body.
 
 **Response:**
 ```json
@@ -481,6 +488,8 @@ Change current user's password.
 }
 ```
 
+**Note:** This endpoint automatically uses the current user's ID from the JWT token. Uses the same request format as the admin endpoint.
+
 **Response:**
 ```json
 true
@@ -506,6 +515,8 @@ Change any user's password (Admin only).
 }
 ```
 
+**Note:** The `userId` is provided in the URL path, not in the request body.
+
 **Response:**
 ```json
 true
@@ -530,6 +541,8 @@ Change user role (Admin only).
   "newRole": "Admin"
 }
 ```
+
+**Note:** The `userId` is provided in the URL path, not in the request body.
 
 **Response:**
 ```json

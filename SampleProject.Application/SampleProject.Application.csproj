@@ -25,5 +25,7 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
 		<!-- HTTP context accessor for authenticated user claims -->
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+		<!-- HTTP request/response for cookie operations -->
+		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
 	</ItemGroup>
 </Project>

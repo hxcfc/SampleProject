@@ -3,6 +3,7 @@ using SampleProject.Application.Interfaces.SampleProject.Authorization;
 using SampleProject.Domain.Common;
 using SampleProject.Domain.Responses;
 using SampleProject.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace SampleProject.Application.Features.Auth.Commands.RefreshToken
 {
@@ -14,15 +15,18 @@ namespace SampleProject.Application.Features.Auth.Commands.RefreshToken
         private readonly IAuthorization _authorization;
         private readonly IJwtService _jwtService;
         private readonly ILogger<RefreshTokenCommandHandler> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public RefreshTokenCommandHandler(
             IAuthorization authorization,
             IJwtService jwtService,
-            ILogger<RefreshTokenCommandHandler> logger)
+            ILogger<RefreshTokenCommandHandler> logger,
+            IHttpContextAccessor httpContextAccessor)
         {
             _authorization = authorization ?? throw new ArgumentNullException(nameof(authorization));
             _jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         public async Task<Result<TokenResponse>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
@@ -31,14 +35,23 @@ namespace SampleProject.Application.Features.Auth.Commands.RefreshToken
             {
                 _logger.LogInformation(StringMessages.ProcessingTokenRefreshRequest);
 
-                if (string.IsNullOrWhiteSpace(request.RefreshToken))
+                // Extract refresh token from HTTP-only cookies
+                var httpContext = _httpContextAccessor.HttpContext;
+                if (httpContext == null)
+                {
+                    _logger.LogWarning("HTTP context is not available");
+                    return Result<TokenResponse>.Failure(StringMessages.InvalidRefreshToken);
+                }
+
+                var refreshToken = _jwtService.GetRefreshTokenFromCookies(httpContext.Request);
+                if (string.IsNullOrWhiteSpace(refreshToken))
                 {
                     _logger.LogWarning(StringMessages.InvalidRefreshTokenProvided);
                     return Result<TokenResponse>.Failure(StringMessages.InvalidRefreshToken);
                 }
 
                 // Validate refresh token and get user information
-                var user = await _authorization.ValidateRefreshTokenAsync(request.RefreshToken);
+                var user = await _authorization.ValidateRefreshTokenAsync(refreshToken);
                 if (user == null)
                 {
                     _logger.LogWarning(StringMessages.InvalidOrExpiredRefreshToken);

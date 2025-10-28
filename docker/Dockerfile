@@ -36,7 +36,23 @@ RUN dotnet publish SampleProject/SampleProject.csproj -c Release -o /app/publish
 
 # Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+
+# Create non-root user for security
+RUN groupadd -r app && useradd -r -g app app
+
 WORKDIR /app
 COPY --from=build /app/publish .
+
+# Change ownership to app user
+RUN chown -R app:app /app
+
+# Switch to non-root user
+USER app
+
 EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
+
 ENTRYPOINT ["dotnet", "SampleProject.dll"]

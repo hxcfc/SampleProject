@@ -21,6 +21,13 @@ namespace SampleProject.Application.Interfaces.Persistence
         Task<int> SaveChangesAsync();
 
         /// <summary>
+        /// Saves all changes to the database
+        /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Number of affected records</returns>
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+
+        /// <summary>
         /// Begins a new transaction
         /// </summary>
         /// <returns>Database transaction</returns>

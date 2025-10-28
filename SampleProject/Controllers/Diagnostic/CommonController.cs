@@ -26,7 +26,7 @@ namespace SampleProject.Controllers.Diagnostic
         [SwaggerOperation(
             Summary = "Get server time",
             Description = "Returns current server time in UTC and local timezone, including Unix timestamp.",
-            OperationId = "GetServerTime"
+            OperationId = "GetCommonServerTime"
         )]
         [SwaggerResponse(200, "Server time information", typeof(object))]
         public IActionResult GetServerTime()
@@ -49,7 +49,7 @@ namespace SampleProject.Controllers.Diagnostic
         [SwaggerOperation(
             Summary = "Get application configuration summary",
             Description = "Returns non-sensitive application configuration information including environment, version, framework, and build details.",
-            OperationId = "GetConfigSummary"
+            OperationId = "GetCommonConfigSummary"
         )]
         [SwaggerResponse(200, "Configuration summary", typeof(object))]
         public IActionResult GetConfigSummary()
@@ -74,7 +74,7 @@ namespace SampleProject.Controllers.Diagnostic
         [SwaggerOperation(
             Summary = "Get available API versions",
             Description = "Returns information about available API versions including current, supported, and deprecated versions.",
-            OperationId = "GetApiVersions"
+            OperationId = "GetCommonApiVersions"
         )]
         [SwaggerResponse(200, "Available API versions", typeof(object))]
         public IActionResult GetApiVersions()

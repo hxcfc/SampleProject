@@ -52,12 +52,11 @@ namespace SampleProject.Controllers.Users
         [SwaggerResponse(404, "User not found", typeof(ErrorResponseModel))]
         [SwaggerResponse(400, "Invalid input data", typeof(ErrorResponseModel))]
         [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
-        public async Task<IActionResult> ChangeMyPassword([FromBody] ChangePasswordCommand command)
+        public async Task<IActionResult> ChangeMyPassword([FromBody] ChangePasswordRequest request)
         {
             // Get current user ID from JWT token
             var currentUserId = _currentUserService.GetCurrentUserId();
-
-            if (string.IsNullOrEmpty(currentUserId) || !Guid.TryParse(currentUserId, out var currentUserIdGuid))
+            if (string.IsNullOrEmpty(currentUserId) || !Guid.TryParse(currentUserId, out var userId))
             {
                 return Unauthorized(new ErrorResponseModel
                 {
@@ -66,7 +65,12 @@ namespace SampleProject.Controllers.Users
                 });
             }
 
-            command.UserId = currentUserIdGuid;
+            var command = new ChangePasswordCommand
+            {
+                UserId = userId,
+                CurrentPassword = request.CurrentPassword,
+                NewPassword = request.NewPassword
+            };
             var result = await Mediator.Send(command);
 
             if (!result.IsSuccess)
@@ -101,9 +105,14 @@ namespace SampleProject.Controllers.Users
         [SwaggerResponse(404, "User not found", typeof(ErrorResponseModel))]
         [SwaggerResponse(400, "Invalid input data", typeof(ErrorResponseModel))]
         [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
-        public async Task<IActionResult> ChangeUserPassword(Guid userId, [FromBody] ChangePasswordCommand command)
+        public async Task<IActionResult> ChangeUserPassword(Guid userId, [FromBody] ChangePasswordRequest request)
         {
-            command.UserId = userId;
+            var command = new ChangePasswordCommand
+            {
+                UserId = userId,
+                CurrentPassword = request.CurrentPassword,
+                NewPassword = request.NewPassword
+            };
             var result = await Mediator.Send(command);
 
             if (!result.IsSuccess)
@@ -138,9 +147,13 @@ namespace SampleProject.Controllers.Users
         [SwaggerResponse(404, "User not found", typeof(ErrorResponseModel))]
         [SwaggerResponse(400, "Invalid input data", typeof(ErrorResponseModel))]
         [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
-        public async Task<IActionResult> ChangeUserRole(Guid userId, [FromBody] ChangeUserRoleCommand command)
+        public async Task<IActionResult> ChangeUserRole(Guid userId, [FromBody] ChangeUserRoleRequest request)
         {
-            command.UserId = userId;
+            var command = new ChangeUserRoleCommand
+            {
+                UserId = userId,
+                NewRole = request.NewRole
+            };
             var result = await Mediator.Send(command);
 
             if (!result.IsSuccess)
@@ -358,7 +371,7 @@ namespace SampleProject.Controllers.Users
         [SwaggerResponse(404, "User not found", typeof(ErrorResponseModel))]
         [SwaggerResponse(400, "Invalid input data", typeof(ErrorResponseModel))]
         [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
-        public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateUserCommand command)
+        public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateMyProfileRequest request)
         {
             // Get current user ID from JWT token
             var currentUserId = _currentUserService.GetCurrentUserId();
@@ -372,10 +385,17 @@ namespace SampleProject.Controllers.Users
                 });
             }
 
-            // Set user ID from JWT token and restrict admin-only fields
-            command.UserId = currentUserIdGuid;
-            command.IsActive = null; // Users cannot change their own active status
-            command.IsEmailVerified = null; // Users cannot change their own email verification status
+            // Create command with user ID from JWT token and restrict admin-only fields
+            var command = new UpdateUserCommand
+            {
+                UserId = currentUserIdGuid,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email,
+                IsActive = null, // Users cannot change their own active status
+                IsEmailVerified = null, // Users cannot change their own email verification status
+                Role = null // Users cannot change their own role
+            };
 
             var result = await Mediator.Send(command);
 
@@ -412,9 +432,18 @@ namespace SampleProject.Controllers.Users
         [SwaggerResponse(404, "User not found", typeof(ErrorResponseModel))]
         [SwaggerResponse(400, "Invalid input data", typeof(ErrorResponseModel))]
         [SwaggerResponse(500, "Internal server error", typeof(ErrorResponseModel))]
-        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserCommand command)
+        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserRequest request)
         {
-            command.UserId = userId;
+            var command = new UpdateUserCommand
+            {
+                UserId = userId,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email,
+                IsActive = request.IsActive,
+                IsEmailVerified = request.IsEmailVerified,
+                Role = request.Role
+            };
             var result = await Mediator.Send(command);
 
             if (!result.IsSuccess)
