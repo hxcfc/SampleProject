@@ -6,6 +6,7 @@ using SampleProject.Application.Dto;
 using SampleProject.Application.Features.Auth.Commands.RefreshToken;
 using SampleProject.Application.Interfaces;
 using SampleProject.Application.Interfaces.SampleProject.Authorization;
+using SampleProject.Domain.Entities;
 using SampleProject.Domain.Enums;
 using SampleProject.Domain.Responses;
 using Xunit;
@@ -54,14 +55,15 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             _jwtServiceMock.Setup(x => x.GetRefreshTokenFromCookies(_httpRequestMock.Object))
                 .Returns(refreshToken!);
 
-            var user = new UserDto
+            var user = new UserEntity
             {
                 Id = Guid.NewGuid(),
                 Email = "test@example.com",
                 FirstName = "John",
                 LastName = "Doe",
                 IsActive = true,
-                Role = UserRole.User
+                Role = UserRole.User,
+                RefreshTokenUseCount = 0
             };
 
             var tokenResponse = new TokenResponse
@@ -74,7 +76,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             };
 
             _authorizationMock
-                .Setup(x => x.ValidateRefreshTokenAsync(It.IsAny<string>()))
+                .Setup(x => x.GetUserEntityByRefreshTokenAsync(It.IsAny<string>()))
                 .ReturnsAsync(user);
 
             _jwtServiceMock
@@ -111,7 +113,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().NotBeNull();
 
-            _authorizationMock.Verify(x => x.ValidateRefreshTokenAsync(It.IsAny<string>()), Times.Never);
+            _authorizationMock.Verify(x => x.GetUserEntityByRefreshTokenAsync(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
@@ -125,8 +127,8 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
                 .Returns(refreshToken!);
 
             _authorizationMock
-                .Setup(x => x.ValidateRefreshTokenAsync(It.IsAny<string>()))
-                .ReturnsAsync((UserDto?)null);
+                .Setup(x => x.GetUserEntityByRefreshTokenAsync(It.IsAny<string>()))
+                .ReturnsAsync((UserEntity?)null);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -136,7 +138,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().NotBeNull();
 
-            _authorizationMock.Verify(x => x.ValidateRefreshTokenAsync(refreshToken), Times.Once);
+            _authorizationMock.Verify(x => x.GetUserEntityByRefreshTokenAsync(refreshToken), Times.Once);
             _jwtServiceMock.Verify(x => x.GenerateTokenAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<UserRole>()), Times.Never);
         }
 
@@ -150,18 +152,19 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             _jwtServiceMock.Setup(x => x.GetRefreshTokenFromCookies(_httpRequestMock.Object))
                 .Returns(refreshToken!);
 
-            var user = new UserDto
+            var user = new UserEntity
             {
                 Id = Guid.NewGuid(),
                 Email = "test@example.com",
                 FirstName = "John",
                 LastName = "Doe",
                 IsActive = false, // Inactive user
-                Role = UserRole.User
+                Role = UserRole.User,
+                RefreshTokenUseCount = 0
             };
 
             _authorizationMock
-                .Setup(x => x.ValidateRefreshTokenAsync(It.IsAny<string>()))
+                .Setup(x => x.GetUserEntityByRefreshTokenAsync(It.IsAny<string>()))
                 .ReturnsAsync(user);
 
             // Act
@@ -172,7 +175,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().NotBeNull();
 
-            _authorizationMock.Verify(x => x.ValidateRefreshTokenAsync(refreshToken), Times.Once);
+            _authorizationMock.Verify(x => x.GetUserEntityByRefreshTokenAsync(refreshToken), Times.Once);
             _jwtServiceMock.Verify(x => x.GenerateTokenAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<UserRole>()), Times.Never);
         }
 
@@ -187,8 +190,8 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
                 .Returns(refreshToken!);
 
             _authorizationMock
-                .Setup(x => x.ValidateRefreshTokenAsync(It.IsAny<string>()))
-                .ReturnsAsync((UserDto?)null);
+                .Setup(x => x.GetUserEntityByRefreshTokenAsync(It.IsAny<string>()))
+                .ReturnsAsync((UserEntity?)null);
 
             // Act
             var result = await _handler.Handle(command, CancellationToken.None);
@@ -198,7 +201,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().NotBeNull();
 
-            _authorizationMock.Verify(x => x.ValidateRefreshTokenAsync(refreshToken), Times.Once);
+            _authorizationMock.Verify(x => x.GetUserEntityByRefreshTokenAsync(refreshToken), Times.Once);
             _jwtServiceMock.Verify(x => x.GenerateTokenAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<UserRole>()), Times.Never);
         }
 
@@ -218,7 +221,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().NotBeNull();
 
-            _authorizationMock.Verify(x => x.ValidateRefreshTokenAsync(It.IsAny<string>()), Times.Never);
+            _authorizationMock.Verify(x => x.GetUserEntityByRefreshTokenAsync(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
@@ -231,14 +234,15 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             _jwtServiceMock.Setup(x => x.GetRefreshTokenFromCookies(_httpRequestMock.Object))
                 .Returns(refreshToken!);
 
-            var user = new UserDto
+            var user = new UserEntity
             {
                 Id = Guid.NewGuid(),
                 Email = "test@example.com",
                 FirstName = "John",
                 LastName = "Doe",
                 IsActive = true,
-                Role = UserRole.User
+                Role = UserRole.User,
+                RefreshTokenUseCount = 0
             };
 
             var tokenResponse = new TokenResponse
@@ -251,7 +255,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             };
 
             _authorizationMock
-                .Setup(x => x.ValidateRefreshTokenAsync(It.IsAny<string>()))
+                .Setup(x => x.GetUserEntityByRefreshTokenAsync(It.IsAny<string>()))
                 .ReturnsAsync(user);
 
             _jwtServiceMock
@@ -272,7 +276,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             result.Value!.AccessToken.Should().Be("new_access_token");
             result.Value!.RefreshToken.Should().Be("new_refresh_token");
 
-            _authorizationMock.Verify(x => x.ValidateRefreshTokenAsync(refreshToken), Times.Once);
+            _authorizationMock.Verify(x => x.GetUserEntityByRefreshTokenAsync(refreshToken), Times.Once);
             _jwtServiceMock.Verify(x => x.GenerateTokenAsync(user.Id.ToString(), user.Email, user.Email, user.FirstName, user.LastName, user.Role), Times.Once);
             _authorizationMock.Verify(x => x.SaveRefreshTokenAsync(user.Id, It.IsAny<string>(), It.IsAny<DateTime>()), Times.Once);
         }
@@ -287,14 +291,15 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             _jwtServiceMock.Setup(x => x.GetRefreshTokenFromCookies(_httpRequestMock.Object))
                 .Returns(refreshToken!);
 
-            var user = new UserDto
+            var user = new UserEntity
             {
                 Id = Guid.NewGuid(),
                 Email = "test@example.com",
                 FirstName = "John",
                 LastName = "Doe",
                 IsActive = true,
-                Role = UserRole.User
+                Role = UserRole.User,
+                RefreshTokenUseCount = 0
             };
 
             var tokenResponse = new TokenResponse
@@ -307,7 +312,7 @@ namespace SampleProject.Test.Unit.Application.Features.Auth.Commands
             };
 
             _authorizationMock
-                .Setup(x => x.ValidateRefreshTokenAsync(It.IsAny<string>()))
+                .Setup(x => x.GetUserEntityByRefreshTokenAsync(It.IsAny<string>()))
                 .ReturnsAsync(user);
 
             _jwtServiceMock

@@ -115,6 +115,8 @@ namespace SampleProject.Infrastructure.Implementations
 
                 userEntity.RefreshToken = null;
                 userEntity.RefreshTokenExpiryTime = null;
+                userEntity.RefreshTokenUseCount = 0;
+                userEntity.RefreshTokenLastUsedAt = null;
                 userEntity.UpdatedAt = DateTime.UtcNow;
 
                 await _unitOfWork.SaveChangesAsync();
@@ -125,6 +127,41 @@ namespace SampleProject.Infrastructure.Implementations
             catch (Exception ex)
             {
                 _logger.LogError(ex, StringMessages.ErrorOccurredWhileRevokingRefreshToken, userId);
+                return false;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> RevokeAllRefreshTokensAsync(Guid userId)
+        {
+            try
+            {
+                _logger.LogWarning("Revoking all refresh tokens for user due to security breach: {UserId}", userId);
+
+                var userRepository = _unitOfWork.Repository<UserEntity>();
+                var userEntity = await userRepository.GetByIdAsync(userId);
+
+                if (userEntity == null)
+                {
+                    _logger.LogWarning("User not found for ID: {UserId}", userId);
+                    return false;
+                }
+
+                // Clear all refresh token data
+                userEntity.RefreshToken = null;
+                userEntity.RefreshTokenExpiryTime = null;
+                userEntity.RefreshTokenUseCount = 0;
+                userEntity.RefreshTokenLastUsedAt = null;
+                userEntity.UpdatedAt = DateTime.UtcNow;
+
+                await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogWarning("All refresh tokens revoked for user: {UserId}", userId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while revoking all refresh tokens for user: {UserId}", userId);
                 return false;
             }
         }
@@ -237,12 +274,7 @@ namespace SampleProject.Infrastructure.Implementations
                     return null;
                 }
 
-                var userRepository = _unitOfWork.Repository<UserEntity>();
-                var userEntity = await userRepository.GetFirstAsync(u =>
-                    u.RefreshToken == refreshToken &&
-                    u.RefreshTokenExpiryTime > DateTime.UtcNow &&
-                    u.IsActive);
-
+                var userEntity = await GetUserEntityByRefreshTokenAsync(refreshToken);
                 if (userEntity == null)
                 {
                     _logger.LogWarning(StringMessages.InvalidOrExpiredRefreshToken);
@@ -275,6 +307,41 @@ namespace SampleProject.Infrastructure.Implementations
             catch (Exception ex)
             {
                 _logger.LogError(ex, StringMessages.ErrorOccurredWhileValidatingRefreshToken);
+                return null;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<UserEntity?> GetUserEntityByRefreshTokenAsync(string refreshToken)
+        {
+            try
+            {
+                _logger.LogInformation("Getting user entity by refresh token");
+
+                if (string.IsNullOrWhiteSpace(refreshToken))
+                {
+                    _logger.LogWarning(StringMessages.InvalidRefreshTokenProvided);
+                    return null;
+                }
+
+                var userRepository = _unitOfWork.Repository<UserEntity>();
+                var userEntity = await userRepository.GetFirstAsync(u =>
+                    u.RefreshToken == refreshToken &&
+                    u.RefreshTokenExpiryTime > DateTime.UtcNow &&
+                    u.IsActive);
+
+                if (userEntity == null)
+                {
+                    _logger.LogWarning(StringMessages.InvalidOrExpiredRefreshToken);
+                    return null;
+                }
+
+                _logger.LogInformation("User entity found for refresh token: {UserId}", userEntity.Id);
+                return userEntity;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting user entity by refresh token");
                 return null;
             }
         }

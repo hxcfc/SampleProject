@@ -1,4 +1,5 @@
 ﻿using SampleProject.Application.Dto;
+using SampleProject.Domain.Entities;
 
 namespace SampleProject.Application.Interfaces.SampleProject.Authorization
 {
@@ -45,5 +46,19 @@ namespace SampleProject.Application.Interfaces.SampleProject.Authorization
         /// <param name="userId">User ID</param>
         /// <returns>True if revoked successfully, false otherwise</returns>
         Task<bool> RevokeRefreshTokenAsync(Guid userId);
+
+        /// <summary>
+        /// Revokes all refresh tokens for user (security measure)
+        /// </summary>
+        /// <param name="userId">User ID</param>
+        /// <returns>True if revoked successfully, false otherwise</returns>
+        Task<bool> RevokeAllRefreshTokensAsync(Guid userId);
+
+        /// <summary>
+        /// Gets user entity by refresh token for security validation
+        /// </summary>
+        /// <param name="refreshToken">Refresh token</param>
+        /// <returns>User entity or null if not found</returns>
+        Task<UserEntity?> GetUserEntityByRefreshTokenAsync(string refreshToken);
     }
 }

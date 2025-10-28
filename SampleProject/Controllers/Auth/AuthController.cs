@@ -124,6 +124,7 @@ namespace SampleProject.Controllers.Auth
         [SwaggerResponse(400, "Failed to logout")]
         [HttpPost("logout")]
         [Authorize]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             var command = new SampleProject.Application.Features.Auth.Commands.Logout.LogoutCommand();
